@@ -124,4 +124,4 @@ Personalized one-pagers and sales decks generated from this research + your own 
 
 ## License
 
-[MIT](LICENSE) · built by [Shape Labs](https://www.shape-labs.com) · [landermixer.com](https://landermixer.com)
+[MIT](LICENSE) · built by [SHAPE](https://www.shape-labs.com) · [landermixer.com](https://landermixer.com)
