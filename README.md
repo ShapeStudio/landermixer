@@ -18,7 +18,7 @@ npx landermixer https://www.linkedin.com/in/zigakerec/ --company-url https://www
     // … headline, location, about, education, past_experience, skills, social_links
   },
   "company": {
-    "name": "Shape (Shape Labs)",
+    "name": "SHAPE",
     "domain": "shape-labs.com",
     "hq_location": "Ljubljana, Slovenia (also Berlin & New York)",
     "funding": { "total_raised_estimate": "Not publicly disclosed; no formal rounds found" },
