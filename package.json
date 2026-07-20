@@ -1,0 +1,63 @@
+{
+  "name": "landermixer",
+  "version": "0.1.0",
+  "description": "Deep prospect research from any LinkedIn URL — structured JSON out. Open-source, bring your own API keys.",
+  "keywords": [
+    "prospect-research",
+    "linkedin",
+    "sales",
+    "outbound",
+    "enrichment",
+    "abm",
+    "cli",
+    "anthropic",
+    "claude"
+  ],
+  "license": "MIT",
+  "author": "Shape Labs (https://www.shape-labs.com)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ShapeStudio/landermixer.git"
+  },
+  "homepage": "https://landermixer.com",
+  "bugs": "https://github.com/ShapeStudio/landermixer/issues",
+  "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "packageManager": "pnpm@10.30.3",
+  "bin": {
+    "landermixer": "./dist/cli/main.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsx src/cli/main.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx test/check-tool-schemas.ts && node --import tsx --test test/schema.test.ts && tsc --noEmit",
+    "prepublishOnly": "pnpm test && pnpm build"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "dotenv": "^16.4.7",
+    "zod": "^3.24.1",
+    "zod-to-json-schema": "^3.25.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "ajv": "^8.20.0",
+    "tsup": "^8.3.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}
