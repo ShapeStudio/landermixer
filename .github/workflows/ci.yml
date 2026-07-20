@@ -9,12 +9,12 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: [20, 22]
+        node: [20, 22, 24]
     steps:
       - uses: actions/checkout@v4
+      # version comes from package.json "packageManager" — specifying it
+      # here too makes pnpm/action-setup hard-fail on any mismatch.
       - uses: pnpm/action-setup@v4
-        with:
-          version: 10
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
@@ -24,11 +24,14 @@ jobs:
       - run: pnpm build
 
   gitleaks:
+    # The gitleaks GitHub *Action* requires a paid license for org repos;
+    # the CLI itself is MIT — run the binary directly instead.
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Scan repo + full history for secrets
+        run: |
+          curl -sSfL https://github.com/gitleaks/gitleaks/releases/download/v8.28.0/gitleaks_8.28.0_linux_x64.tar.gz | tar -xz gitleaks
+          ./gitleaks git --no-banner --redact --exit-code 1
