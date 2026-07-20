@@ -2,7 +2,7 @@
 
 **Deep prospect research from any LinkedIn URL. Structured JSON out.**
 
-One command runs a research agent that works through up to 12 targeted web searches — the person, their company, its competitors, funding, news, hiring, traffic, pricing — and returns a single validated JSON dossier you can pipe anywhere.
+One command runs a research agent that works through up to 13 targeted web searches — the person, their company, its global and home-market competitors, funding, news, hiring, traffic, pricing — and returns a single validated JSON dossier you can pipe anywhere.
 
 ```bash
 export ANTHROPIC_API_KEY=sk-ant-…
@@ -105,8 +105,8 @@ Keys load from env vars or a `.env` in the working directory. **Approximate cost
 
 | Depth | Web searches | Typical cost |
 |---|---|---|
-| `standard` | up to 12 | ~$0.30–0.45 |
-| `deep` | up to 16 | ~$0.50–0.60 |
+| `standard` | up to 13 | ~$0.30–0.45 |
+| `deep` | up to 17 | ~$0.50–0.60 |
 
 Made of: Anthropic tokens (~$0.20–0.35), web-search fees ($0.01/search), optional Proxycurl (~$0.01).
 

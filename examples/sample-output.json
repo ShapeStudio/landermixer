@@ -1,43 +1,38 @@
 {
   "person": {
     "full_name": "Žiga Kerec",
-    "headline": "Founder & CTO at Shape — AI co-workers and custom AI",
+    "headline": "Founder & CTO at Shape | Building AI co-workers and custom AI products",
     "location": "Slovenia",
-    "about": "Žiga Kerec is the Founder and CTO of Shape (shape-labs.com), an AI-native venture studio and process automation shop headquartered in Ljubljana with offices in Berlin and New York. With a decade-plus background in full-stack engineering, he co-founded Shape alongside two partners (Aljoša and Marko) after previous stints building products at Pablu, Relum, and Cherrydeck. He is publicly vocal on LinkedIn about software craftsmanship, reliable engineering, and the shift from traditional dev agencies to AI-first product studios. He also maintains a photography profile on Cherrydeck, reflecting an interest in visual media that likely informed Shape's ProductAI and Wondercut product lines.",
+    "about": "Žiga Kerec is the engineering co-founder and CTO of Shape, a Slovenian AI venture studio with offices in Berlin, New York, and Ljubljana. He owns all engineering decisions for the studio's own SaaS products (ProductAI, Wondercut, MomentClip, MapleNorth) and its client delivery. A full-stack developer by training, he previously built Cherrydeck (a location-based photographer discovery platform) from the ground up and held a Tech Lead role at Relum, an AI-driven content startup. He is an active builder and writer on LinkedIn covering agentic coding, AI product development, and engineering team management.",
     "linkedin_url": "https://www.linkedin.com/in/zigakerec/",
     "current_role": {
-      "title": "Founder & CTO",
-      "company": "Shape (shape-labs.com)",
-      "years_in_role": "7+ years (studio founded ~2018–2019)"
+      "title": "Co-Founder & CTO",
+      "company": "Shape (Shape Labs / Shape d.o.o.)",
+      "years_in_role": "~7 years (est. 2018–present based on com"
     },
-    "total_years_experience": "~13 years",
+    "total_years_experience": "~11 years (2015–2026)",
     "education": [
       {
-        "school": "University of Ljubljana — FRI (Faculty of Computer and Information Science)",
-        "degree": "Bachelor's Degree, Computer and Information Science",
+        "school": "Faculty of Computer and Information Science (FRI), University of Ljubljana",
+        "degree": "Bachelor's Degree, Computer and Information Sciences",
         "years": "2011–2015"
       }
     ],
     "past_experience": [
       {
-        "title": "Co-founder / Engineer",
-        "company": "Pablu",
-        "note": "Live-commerce / video marketplace platform; pitched at WebSummit Lisbon and Expo 2020 Dubai; raised $200K pre-seed"
+        "title": "Tech Lead",
+        "company": "Relum",
+        "note": "AI-driven content creation platform; listed on Crunchbase with Žiga as Tech Lead alongside co-founder Aljoša Zidan"
       },
       {
-        "title": "Engineer / Contributor",
-        "company": "Relum",
-        "note": "Listed as a past role on RocketReach; product details not verified"
+        "title": "Co-Founder",
+        "company": "Pablu",
+        "note": "Livestream shopping marketplace; one of three founders who pivoted Shape from agency to product studio"
       },
       {
         "title": "Full-Stack Software Engineer",
         "company": "Cherrydeck",
-        "note": "Location-based talent discovery app for Instagram photographers. Worked on PostgreSQL architecture, SailsJS/Node.js back-end, ReactJS + MobX State Tree front-end. Helped onboard thousands of users."
-      },
-      {
-        "title": "Blog Contributor",
-        "company": "Netokracija (Slovenia)",
-        "note": "Wrote articles on Slovenian mobile apps, games, and local tech scene"
+        "note": "Location-based talent discovery app for Instagram photographers. Helped design and build it from scratch; worked on PostgreSQL, SailsJS/Node.js backend, ReactJS + MobX frontend. Onboarded thousands of users in months."
       }
     ],
     "skills": [
@@ -45,225 +40,259 @@
       "React / React Native",
       "Node.js",
       "PostgreSQL",
-      "AI / agentic systems",
-      "Product strategy",
-      "Venture studio operations",
-      "CTO leadership",
-      "Lean product development",
-      "MVP delivery"
+      "AI/ML product development",
+      "Agentic coding (Claude Code, Cursor)",
+      "Vercel",
+      "Supabase",
+      "Computer vision",
+      "RAG / LLM integration",
+      "Stripe",
+      "SailsJS"
     ],
     "recent_activity_themes": [
-      "AI-native product development and agentic coding (Claude Code, Cursor, Windsurf)",
-      "Reliability and communication in software teams vs. raw talent",
-      "Venture studio model and co-building on equity terms",
-      "Freelance programming market dynamics and agency disintermediation",
-      "Building in public: shipping DeliveryBudz in NYC, Wondercut at Bled Castle"
+      "Agentic coding and AI-native software development",
+      "Engineering team management (communications, accountability)",
+      "Shipping AI MVPs in 6-week fixed-scope engagements",
+      "Internal product growth: ProductAI at 1,000+ paying users, Wondercut feature iteration",
+      "Claude Code vs Cursor tooling comparisons"
     ]
   },
   "company": {
-    "name": "Shape (Shape Labs)",
+    "name": "Shape (Shape Labs / Shape d.o.o.)",
     "domain": "shape-labs.com",
     "logo_url": "https://logo.clearbit.com/shape-labs.com",
-    "summary": "Shape is an AI-native venture studio and process automation shop. It operates on two tracks: (1) building and operating its own AI SaaS products (ProductAI, Wondercut, MomentClip, MapleNorth, SocialBoy, DeliveryBudz, Mooneyes, Knjigovid) and (2) embedding with client companies to rebuild manual business processes with AI-native software on multi-year partnership terms. The studio's pitch is that every automation it sells to clients has already survived production on its own P&L — a proof-of-practice differentiator vs. pure consulting shops.",
-    "industry": "AI Venture Studio / Process Automation / Software Development",
-    "founded_year": "~2018–2019",
-    "hq_location": "Ljubljana, Slovenia (also Berlin & New York)",
-    "employee_count_estimate": "~3–10 (self-described as 'three of us' core team; boutique studio)",
+    "summary": "Shape is an AI-native venture studio that both builds and ships its own SaaS products (ProductAI, Wondercut, MomentClip, MapleNorth) and takes on client engagements for AI automation and MVP development. Its key differentiator is that it battle-tests every technique on its own P&L before selling it to clients. Engagements run as fixed-scope MVP builds (from $48K, 6 weeks) or dedicated monthly pods ($35–60K/month). Co-founders: Marko Balažic (product), Aljoša Zidan (commercial/software), Žiga Kerec (engineering/CTO).",
+    "industry": "AI Venture Studio / AI Software Development",
+    "founded_year": "~2018 (infer",
+    "hq_location": "Ljubljana, Slovenia (also Berlin, Germany and New York, USA)",
+    "employee_count_estimate": "3 named co-founders; boutique team, likely <15 total (listed in Product Design C",
     "products": [
-      "ProductAI — AI studio photography for ecommerce (background removal, scene generation, brand-consistent shots)",
-      "Wondercut — On-site AI photo-booth activations that convert event visitors into shareable portraits and qualified leads",
-      "MomentClip — AI video extractor surfacing best clips from long-form footage for creators and brand teams",
-      "MapleNorth — Short-term rental (STR) operations co-pilot: guest comms, cleaning ops, dynamic pricing, revenue lift",
-      "Knjigovid — AI invoice reader: reads, categorises and exports invoices to accounting software",
-      "SocialBoy — (Details not fully verified; listed as own product)",
-      "DeliveryBudz — (Deployed on the ground in NYC; delivery-related product)",
-      "Mooneyes — (Listed as own product; details not verified)"
+      "ProductAI — AI studio photos for ecommerce (background removal, scene generation, brand-consistent shots)",
+      "Wondercut — AI video extractor surfacing shareable moments from long footage; 1,000+ paying users within 8 months of launch",
+      "MomentClip — AI video highlights tool for creators and brand teams",
+      "MapleNorth (2026) — AI operations co-pilot for short-term rental (STR) owners: guest comms, cleaning ops, dynamic pricing",
+      "Knjigovid — AI invoice reader that categorises and exports to accounting software",
+      "Poliglot — RAG-based bulk translation tool (built for a named client)",
+      "Bentoads — AI-native ad generation tool",
+      "Wondercut (brand experience) — On-site AI activations turning visitors into portrait leads at events/retail"
     ],
-    "positioning": "AI-native process automation studio that rebuilds business workflows from scratch (not chatbot overlays), cutting operational costs from e.g. €2,000/mo to €300/mo. Differentiates on operator credibility (own products in market), boutique speed (weeks not quarters), and long-term partnership model (avg. 3+ year engagements, equity co-builds available).",
+    "positioning": "AI-native process automation studio; positions against generic dev shops and pure consultancies by proving its methods survive production on its own products first. Tagline: 'We don't bolt AI onto products for the pitch deck. We build it into the core.'",
     "funding": {
-      "total_raised_estimate": "Not publicly disclosed; Crunchbase shows no formal funding rounds for shape-labs.com entity",
-      "last_round": "Pre-seed ($200K raised for Pablu — predecessor venture, not Shape studio itself)",
-      "last_round_date": "~2020–2021 (Pablu era)",
+      "total_raised_estimate": "No external funding identified; appears bootstrapped / self-funded from services revenue and own-product ARR",
+      "last_round": "None identified",
+      "last_round_date": "",
       "notable_investors": []
     },
     "hiring_signals": {
       "actively_hiring": false,
       "roles_hiring_for": [],
-      "note": "No verified open roles found on shape-labs.com careers page or major job boards for this specific studio (as of research date July 2026). The team self-describes as 'three of us' core founders. Hiring intent cannot be confirmed; studio appears lean by design."
+      "note": "No open roles found on shape-labs.com careers page or job boards attributable to this specific Shape d.o.o. entity. Studio is explicitly described as a small three-founder team. No hiring signals detected."
     },
     "tech_stack": [
       "React",
       "React Native",
       "Node.js",
+      "Next.js",
       "PostgreSQL",
-      "SailsJS (historical)",
-      "MobX State Tree (historical)",
-      "AI/LLM integrations (Claude, Cursor, Windsurf referenced in blog)",
-      "Agentic coding workflows",
-      "RAG pipelines",
-      "AI copilots / automation agents"
+      "Supabase (auth + DB)",
+      "Vercel (deployment)",
+      "Stripe (billing)",
+      "Claude API / OpenAI API",
+      "RAG architecture",
+      "Claude Code",
+      "Cursor"
     ],
     "recent_news": [
       {
-        "title": "Shape publishes 'agentic coding' editorial series on shape-labs.com (May 2026)",
-        "date": "2026-05-26",
+        "title": "MapleNorth Launched — AI Operations Co-Pilot for Short-Term Rental Owners",
+        "date": "2026",
+        "url": "https://www.shape-labs.com/work",
+        "why_it_matters": "New revenue line in the fast-growing STR tech market; signals continued product-studio expansion beyond creative AI tools."
+      },
+      {
+        "title": "Shape publishes prolific SEO content blitz on agentic AI development (10+ articles in May 2026)",
+        "date": "May 2026",
         "url": "https://www.shape-labs.com/articles",
-        "why_it_matters": "Signals active thought-leadership push and SEO investment around agentic AI development — the studio is positioning for inbound from founder/operator buyers in 2026."
+        "why_it_matters": "Aggressive top-of-funnel content strategy targeting 'agentic AI development', 'AI MVP services' keywords — signals active lead-gen investment and growth intent."
       },
       {
-        "title": "Shape completes Owesa MVP build: full-stack professional networking platform with AI marketing engine (2026)",
-        "date": "2026-02-26",
+        "title": "ProductAI reaches 1,000+ paying users within 8 months of launch",
+        "date": "2025–2026",
+        "url": "https://www.shape-labs.com/articles/ai-mvp-development-services",
+        "why_it_matters": "Validates the studio's self-funded product model and demonstrates a proven ecommerce AI use case with traction. Strong social proof for client pitches."
+      },
+      {
+        "title": "Shape delivers full-stack AI MVP for Owesa (professional networking & job marketplace) — verified Clutch review",
+        "date": "2026",
         "url": "https://clutch.co/profile/shape-labs",
-        "why_it_matters": "Demonstrates Shape's ability to ship complex AI-integrated platforms end-to-end; strong Clutch review adds social proof for enterprise client outreach."
+        "why_it_matters": "Demonstrates cross-sector delivery capability including agentic features, social feeds, and automated marketing agents — expands perceived TAM."
       },
       {
-        "title": "Wondercut deployed at Bled Castle EU project opening",
+        "title": "Wondercut EU project opens at Bled Castle; Shape expands physical AI experience activations across Europe",
         "date": "2025",
-        "url": "https://www.shape-labs.com/articles/WONDERCUT-Where-AI-Meets-Art-to-Transform-the-Museum-Experience",
-        "why_it_matters": "Shows Wondercut is landing EU-funded culture/events clients — a signal of commercial traction beyond pure startup/tech verticals."
-      },
-      {
-        "title": "DeliveryBudz shipped on the ground in New York City",
-        "date": "2024–2025",
         "url": "https://www.shape-labs.com/",
-        "why_it_matters": "US market expansion signal; running live product ops in NYC shows the team is pursuing international revenue alongside European studio work."
-      },
-      {
-        "title": "Shape listed on startup.si Slovenian startup map as AI/automation studio",
-        "date": "2024",
-        "url": "https://www.startup.si/en-us/startup-map/startups-scaleups/shape-labs",
-        "why_it_matters": "Official recognition in the Slovenian startup ecosystem; may unlock local partnership and grant opportunities."
+        "why_it_matters": "Shows offline-to-online AI experience capability, differentiated from pure software shops — possible expansion into experiential/retail segments."
       }
     ]
   },
   "competitors": [
     {
-      "name": "Altar.io",
-      "domain": "altar.io",
-      "note": "Lisbon-based product studio and venture builder offering MVP development, strategy, and co-founder matching. Well-known in European startup circles with strong Clutch presence.",
-      "vs_positioning": "Shape differentiates on AI-native rebuild (not bolt-on) and on proving its automations on its own SaaS products first. Altar.io is more traditional product studio without Shape's operator-tested product portfolio."
+      "name": "Bonsai (formerly Bench, or comparable AI dev studios like AI Fund / Andrew Ng's studio)",
+      "domain": "aifund.ai",
+      "hq_location": "San Francisco, USA",
+      "note": "AI Fund (Andrew Ng) is a well-funded AI venture studio model; backed by $370M+, operates at much larger scale and with formal VC co-investment. Competes for the 'AI venture studio' positioning globally.",
+      "vs_positioning": "Shape wins on speed (6-week MVP vs. multi-month), cost efficiency (European rates, $48K floor), and proof-by-own-products. AI Fund targets deep-tech and enterprise; Shape targets seed founders and SMBs needing fast AI delivery."
     },
     {
-      "name": "Leanware",
-      "domain": "leanware.co",
-      "note": "Latin American AI software development company offering ML, NLP, and custom AI solutions. Competes on price point and AI delivery capability for startups.",
-      "vs_positioning": "Shape is a European boutique with longer-term partnership framing and equity co-build option; Leanware competes on lower hourly rates but lacks Shape's portfolio of live AI products."
+      "name": "Povio",
+      "domain": "povio.com",
+      "hq_location": "Ljubljana, Slovenia (also US offices)",
+      "note": "Slovenian product design and development company building digital products across AI, cloud, and development. Well-known in the Ljubljana tech scene; sponsor of local AI/developer meetups.",
+      "vs_positioning": "Shape positions as an operator-studio (ships its own products) vs. Povio's pure-service model. Shape's fixed-scope MVP at known price points and self-proven AI tooling is a sharper offer for founders wanting speed."
     },
     {
-      "name": "LeewayHertz",
-      "domain": "leewayhertz.com",
-      "note": "US-based AI software development company building enterprise AI solutions, LLM apps, and automation. Larger scale than Shape, serves enterprise clients.",
-      "vs_positioning": "Shape is deliberately boutique (faster, more personal) vs. LeewayHertz's larger enterprise focus. Shape's equity model and 3+ year partnership avg. creates stickier relationships than LeewayHertz's project-based delivery."
+      "name": "Shaper Labs",
+      "domain": "shaperlabs.io",
+      "hq_location": "Unknown (English-language, global)",
+      "note": "Fixed-price MVP development shop with similar 4–8 week timelines. Competes directly on the 'fast fixed-price MVP' positioning and targets the same early-stage founder audience.",
+      "vs_positioning": "Shape differentiates via its own live AI products (ProductAI, Wondercut) as proof points, agentic coding discipline, and a venture-studio co-build option with equity. Shaper Labs is services-only."
     },
     {
-      "name": "Founders Factory",
-      "domain": "foundersfactory.com",
-      "note": "London-based venture studio partnering with corporates to build and scale startups. Mentioned in Shape's own 'What is a Venture Studio' article as a comparable.",
-      "vs_positioning": "Founders Factory is corporate-backed and operates at larger scale. Shape is founder-led and more nimble, targeting SMB/startup clients who want a hands-on technical partner, not a corporate accelerator."
+      "name": "Lemon.io / Toptal (AI dev talent marketplaces)",
+      "domain": "lemon.io",
+      "hq_location": "USA / Global",
+      "note": "Developer talent marketplaces often compared by founders evaluating Shape. Offer on-demand engineers but no product ownership, no eval discipline, no own-product proof.",
+      "vs_positioning": "Shape's dedicated pod model ($35–60K/month) competes at similar spend but includes strategy, AI eval infrastructure, and operator accountability that marketplaces cannot offer."
     },
     {
-      "name": "Atomic (Atomic.vc)",
-      "domain": "atomic.vc",
-      "note": "San Francisco venture studio model; creates and invests in technology companies, providing capital, talent, and expertise. Operates primarily in the US market.",
-      "vs_positioning": "Shape operates at lower price points and in European/Slovenian market context; its focus on AI process automation for existing businesses (vs. net-new company creation) differentiates it from Atomic's pure venture creation model."
+      "name": "Forum Ventures AI Studio",
+      "domain": "forumvc.com",
+      "hq_location": "New York, USA",
+      "note": "B2B AI venture studio providing $250K capital + co-building support. Competes for equity-deal founders who want both money and build support.",
+      "vs_positioning": "Shape's equity co-build model (no disclosed capital injection) is more accessible for non-US founders; Shape also takes on pure fee-based client work, giving it dual revenue streams Forum Ventures lacks."
+    }
+  ],
+  "domestic_competitors": [
+    {
+      "name": "Povio",
+      "domain": "povio.com",
+      "hq_location": "Ljubljana, Slovenia",
+      "note": "Largest known Slovenian digital product studio; builds across AI, cloud, and mobile. Has US presence but HQ and engineering team are Ljubljana-based. Active in local AI developer community.",
+      "vs_positioning": "Shape wins on AI-native depth (own AI products in production), boutique speed, and venture-studio co-build terms. Povio is larger-team, more process-heavy."
+    },
+    {
+      "name": "Celtra",
+      "domain": "celtra.com",
+      "hq_location": "Maribor / Ljubljana, Slovenia",
+      "note": "Slovenian creative automation platform using AI for ad and content production. Overlaps with Shape's ProductAI and Bentoads in the AI creative automation space. Enterprise-focused.",
+      "vs_positioning": "Celtra targets large enterprise brands with a SaaS platform; Shape targets founders and SMBs with bespoke AI builds and its own lightweight products. Different buyer profile, but same underlying AI creative automation category."
+    },
+    {
+      "name": "ABC Accelerator (portfolio companies)",
+      "domain": "abc-accelerator.com",
+      "hq_location": "Ljubljana, Slovenia",
+      "note": "Slovenia's leading startup accelerator; some portfolio companies are AI dev studios or competing in adjacent venture-building. Not a direct competitor but shapes the same founder pipeline Shape targets for co-builds.",
+      "vs_positioning": "Shape offers equity co-builds without the accelerator cohort structure; faster to production, no batch model. Founders who want to build fast and keep more equity may prefer Shape's model."
     }
   ],
   "commercials": {
-    "web_traffic_estimate": "Not available via SimilarWeb for this domain at this scale; shape-labs.com is a boutique studio site — traffic likely in the low thousands of monthly visits. No third-party estimate retrieved.",
+    "web_traffic_estimate": "No third-party traffic estimate retrieved for shape-labs.com specifically. Site publishes 20+ SEO articles targeting high-volume AI development keywords (agentic AI, AI MVP, etc.) — organic traffic li",
     "monthly_traffic": 0,
-    "aov_estimate": "Estimated $40,000–$80,000 per client engagement based on Clutch data range ($12K MVP to $160K long-term); median likely $40K–$60K for typical partnerships",
-    "pricing_model": "Project-based + retainer. Minimum project size $25,000+. Hourly rate $50–$99/hr (per Clutch). Long-term partnerships str",
+    "aov_estimate": "~$50,000–$72,000 per client engagement (fixed-scope MVP); ~$40,000–$60,000/month for retainer pods. Own-product SaaS AOV not publicly available.",
+    "pricing_model": "Dual model: (1) Client services — Fixed-Scope MVP from $48K / 6 weeks; Dedicated Pod $35–60K/month for 3–12 months; mini",
     "typical_price_points": [
-      "$25,000+ minimum project engagement (Clutch verified)",
-      "$50–$99/hr average hourly rate (Clutch verified)",
-      "$12,000 MVP-tier projects documented (Clutch review)",
-      "$160,000 long-term projects documented (Clutch review)",
-      "Equity co-build track available (no disclosed cash minimum)"
+      "Fixed-Scope MVP: from $48K, 6 weeks (most engagements $48K–$72K all-in)",
+      "Dedicated Pod: $35,000–$60,000/month",
+      "Minimum project size: $25,000+",
+      "Hourly rate: $50–$99/hr (Clutch)",
+      "Client project range observed: $12,000 (small MVP) to $160,000 (long-term engagement)"
     ]
   },
   "outreach": {
-    "role_summary": "Žiga is the technical co-founder and CTO of a small but commercially active AI venture studio. He makes (or heavily influences) all technology, tooling, and vendor decisions. He is an active practitioner — writing code, shipping products, and managing client delivery simultaneously. As CTO at a ~3-p",
+    "role_summary": "Žiga is the engineering decision-maker and co-founder of a 3-person AI venture studio that ships both its own AI SaaS products and client MVPs. As CTO, he controls all tech stack choices, tooling, infrastructure, integrations, and developer hiring. He is an operator-builder who personally codes, use",
     "likely_pain_points": [
-      "Scaling delivery capacity without hiring full-time engineers — a 3-person studio with 3+ year client engagements and multiple own products faces constant capacity crunches",
-      "Keeping up with rapidly evolving AI tooling (Claude Code, Cursor, Windsurf) while delivering client commitments — tooling evaluation takes time the team doesn't have",
-      "Client acquisition and pipeline — a boutique studio lives and dies by referrals; any tool that shortens or automates outbound sales/lead qualification is high-value",
-      "Managing multi-product SaaS operations (ProductAI, Wondercut, MomentClip, MapleNorth, etc.) alongside client project delivery — context-switching overhead is real",
-      "Invoice and accounting ops (they literally built Knjigovid to solve this for others — suggests it was a pain they felt themselves)"
+      "Scaling AI evaluation pipelines and keeping eval infrastructure robust as multiple products run simultaneously (ProductAI, Wondercut, MomentClip, MapleNorth)",
+      "Managing compute and LLM API costs across a portfolio of AI SaaS products, especially as paying user counts grow (ProductAI at 1,000+ users)",
+      "Maintaining development velocity and code quality across a very small team handling both client work and own products — context-switching tax is high",
+      "Client acquisition and pipeline predictability: the studio has a strong product story but relies heavily on content SEO and word-of-mouth — outbound is thin",
+      "Tooling coherence: using Claude Code and Cursor interchangeably suggests unresolved workflow orchestration; a routing or orchestration layer could save significant developer time"
     ],
     "hooks": [
-      "Shape's homepage says 'if a process costs €2,000/mo manual, we make it €300' — that's exactly the kind of ROI framing [your product] delivers to studios like Shape itself on [specific process]",
-      "You're publishing agentic coding content and running Claude Code + Cursor in production — [your product] integrates directly into that workflow and cuts [specific overhead] by [X]",
-      "You co-build with founders on equity — we work with several venture studios who use [your product] to qualify inbound founder pitches faster without adding headcount",
-      "Wondercut and ProductAI are live products with real users — [your product] could help Shape reduce the manual ops burden between those product lines without hiring"
+      "You wrote about choosing between Claude Code and Cursor depending on the task — we help teams like Shape build a router so you stop making that choice manually and just get the right output.",
+      "ProductAI hitting 1,000+ paying users in 8 months is a strong signal — at that scale, eval infrastructure and LLM cost management become the bottleneck. We help AI SaaS teams instrument that layer without slowing down shipping.",
+      "You're running both a client studio ($48K MVPs) and four live products simultaneously with three people — the hardest problem at that stage is context-switching and shared infra. We've helped studios in the same position build shared eval + deployment scaffolding that keeps both ",
+      "The article on agentic coding vs vibe coding shows you think hard about where AI accelerates vs. where it cuts corners — that's the right mental model. We help CTO-founders like you audit the specific gaps between what agentic coding delivers today and what your team actually nee",
+      "Wondercut just launched in 2026 and MapleNorth is new — managing two fresh launches while serving client pods is a capacity crunch. Tools that reduce your own infrastructure overhead (monitoring, eval, deployment) buy back engineering hours without adding headcount."
     ],
     "talking_points": [
-      "Shape is running ~4 live SaaS products plus active client delivery with a core team of 3 — any solution that reduces ops drag or automates internal workflows aligns with how they already think about value (they sell this exact thing to clients)",
-      "Their avg. client engagement is 3+ years — they're not project-hopping; they appreciate long-term vendor relationships with measurable ROI, not demos",
-      "Clutch shows min. $25K project size and $50–99/hr rate; they're not price-sensitive at the enterprise tool level if ROI is clear",
-      "Žiga and his co-founders are active on LinkedIn with build-in-public content — mention specific posts or articles to signal genuine research and warm the conversation"
+      "Shape's own-product proof model ($48K MVP → ProductAI at 1,000+ paying users) is a strong differentiator in the market; any tool or service you bring in should reinforce, not complicate, that story",
+      "The Dedicated Pod model ($35–60K/month) implies recurring revenue but also recurring delivery pressure — tooling that reduces context-switch cost pays back quickly at that cadence",
+      "MapleNorth and MomentClip are both 2026 launches; Žiga is likely in the most resource-constrained phase of the studio's history right now",
+      "The studio is bootstrapped (no external funding detected) — ROI and payback speed will be more persuasive than feature lists; lead with cost savings or hours recovered",
+      "Žiga personally writes about AI engineering — he responds to peer-level technical conversations, not vendor pitches. Lead with insight, not a demo request"
     ],
-    "tone_match": "Direct, no-BS, technically credible. Žiga writes plainly and calls out hype ('we don't bolt a chatbot onto the old process'). Mirror this: skip the buzzwords, lead with a specific observation from their work, quantify the value prop fast. D",
+    "tone_match": "Peer-level, direct, technically grounded. Žiga writes in a blunt, no-BS register on LinkedIn (e.g. 'boring is fast'). Avoid corporate language, long intros, and feature-list pitches. Open with a specific observation from his public writing ",
     "icebreakers": [
-      "Žiga — saw the Wondercut install at Bled Castle, that's a great real-world AI activation. Curious how you're managing ops across that and ProductAI simultaneously at the team size you're running.",
-      "Your LinkedIn post about replacing the 'unreliable genius' with the 'reliable average' really landed — we actually built [product] around that exact principle. Would love your take on it.",
-      "You wrote about agentic coding vs. vibe coding — we're seeing studios like yours use [product] to bring that same discipline to [specific workflow]. Worth a 15-min call?"
+      "Žiga — saw your post on firing a talented-but-unreachable developer and replacing him with someone average. That framing really resonated. It's the same tradeoff studios hit with AI tooling: brilliant but unpredictable vs. reliable and shippable. Happy to share what we've seen work for small teams running multiple AI p",
+      "Žiga, the Claude Code vs Cursor piece you wrote is one of the cleaner breakdowns I've seen of the two modes. We work with a few studios running similar dual-track setups and have noticed a pattern around where the routing decision should actually live — curious if you'd find it useful to compare notes.",
+      "Saw that ProductAI crossed 1,000 paying users recently — congrats. At that milestone the LLM cost curve usually starts to bite. We help AI SaaS teams model and optimise that before it becomes a surprise invoice."
     ]
   },
   "meta": {
-    "confidence": "medium",
+    "confidence": "high",
     "profile_accessible": true,
     "sources": [
       {
-        "label": "LinkedIn — Žiga Kerec profile",
+        "label": "LinkedIn — Žiga Kerec profile (snippet via Google)",
         "url": "https://www.linkedin.com/in/zigakerec/"
       },
       {
-        "label": "Shape Labs — Homepage",
-        "url": "https://www.shape-labs.com/"
-      },
-      {
-        "label": "Shape Labs — About page",
+        "label": "Shape about page",
         "url": "https://www.shape-labs.com/about"
       },
       {
-        "label": "Shape Labs — Work / Products page",
+        "label": "Shape homepage",
+        "url": "https://www.shape-labs.com/"
+      },
+      {
+        "label": "Shape work/portfolio page",
         "url": "https://www.shape-labs.com/work"
       },
       {
-        "label": "Shape Labs — Articles index",
+        "label": "Shape articles index",
         "url": "https://www.shape-labs.com/articles"
       },
       {
-        "label": "Clutch — Shape Labs profile & reviews",
-        "url": "https://clutch.co/profile/shape-labs"
+        "label": "Shape AI MVP Development Services article ($48K, 6 weeks pricing)",
+        "url": "https://www.shape-labs.com/articles/ai-mvp-development-services"
       },
       {
-        "label": "startup.si — Shape Labs listing",
-        "url": "https://www.startup.si/en-us/startup-map/startups-scaleups/shape-labs"
-      },
-      {
-        "label": "RocketReach — Žiga Kerec contact record",
-        "url": "https://rocketreach.co/ziga-kerec-email_138545372"
-      },
-      {
-        "label": "Crunchbase — Shape Labs profile",
-        "url": "https://www.crunchbase.com/organization/shape-labs"
-      },
-      {
-        "label": "Shape Labs — How we built Pablu prototype (blog)",
+        "label": "Shape — How We Build a Prototype (Pablu origin story with Žiga named)",
         "url": "https://www.shape-labs.com/articles/how-we-build-a-prototype-in-6-weeks-got-traction-and-200-000-pre-seed-funding----part-1"
       },
       {
-        "label": "Cherrydeck — Žiga Kerec photographer profile",
-        "url": "https://cherrydeck.com/zigakerec"
+        "label": "RocketReach — Žiga Kerec (Founder & CTO, education, prior roles)",
+        "url": "https://rocketreach.co/ziga-kerec-email_138545372"
       },
       {
-        "label": "Shape Labs — AI Ads Automation page",
-        "url": "https://www.shape-labs.com/ai-ads-automation"
+        "label": "Crunchbase — Shape Labs (founders, location, legal name Shape d.o.o.)",
+        "url": "https://www.crunchbase.com/organization/shape-labs"
+      },
+      {
+        "label": "Crunchbase — Relum (Žiga as Tech Lead)",
+        "url": "https://www.crunchbase.com/organization/relum"
+      },
+      {
+        "label": "Clutch — Shape Labs reviews (pricing, Žiga owns engineering)",
+        "url": "https://clutch.co/profile/shape-labs"
+      },
+      {
+        "label": "startup.si — Shape Labs profile",
+        "url": "https://www.startup.si/en-us/startup-map/startups-scaleups/shape-labs"
       }
     ],
-    "research_notes": "Company headcount is inferred from 'three of us' language on the About page — no verified employee count from LinkedIn company page or third-party HR data. Web traffic for shape-labs.com could not be retrieved from SimilarWeb or similar tools (site is likely below their reporting threshold). Funding data refers to Pablu (a predecessor venture), not Shape studio itself — no formal VC rounds identified for the studio entity. Tech stack inferred from client project descriptions (React, React Native, Node.js, PostgreSQL explicitly cited in homepage and Clutch reviews) plus the team's public blog references to Claude Code, Cursor, and Windsurf as agentic coding tools.",
-    "researched_at": "2026-07-20T13:37:23.247Z",
+    "research_notes": "Web traffic figures for shape-labs.com could not be retrieved from SimilarWeb or Semrush snippets — monthly_traffic left as 0 with explanation in aov_estimate. Hiring page for shape-labs.com returned no relevant results (queries surfaced unrelated Shape entities). Shape's funding status is unconfirmed as bootstrapped — no Crunchbase funding rounds listed and no press releases found; this is the most likely scenario for a 3-person studio, but cannot be ruled out with certainty. The $200K pre-seed mentioned in the Pablu article appears to refer to Pablu specifically, not Shape's current operation. Žiga's exact start date at Shape is inferred (~2018) from '7 years of shipping ventures' phrasing on the site as of 2025.",
+    "researched_at": "2026-07-20T18:35:58.361Z",
     "model": "claude-sonnet-4-6",
     "searches_used": 10,
     "schema_version": "1"

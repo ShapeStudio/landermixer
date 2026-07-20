@@ -28,7 +28,7 @@ Usage:
 Options:
   --company-url <url>    the prospect company's website (anchors company research)
   --notes <text>         anything you already know — feeds the research
-  --depth <d>            standard (12 searches, default) | deep (16 searches)
+  --depth <d>            standard (13 searches, default) | deep (17 searches)
   --model <id>           Anthropic model id (default claude-sonnet-4-6)
   --csv <file>           batch mode: CSV with a linkedin_url column
                          (optional columns: company_url, name, company, notes)

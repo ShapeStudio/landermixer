@@ -140,6 +140,7 @@ export const companySchema = z.object({
 export const competitorSchema = z.object({
   name: clip(120),
   domain: z.string().max(240).optional(),
+  hq_location: clipOpt(120).optional(),
   /** Where they stand in the market (researched, not invented). */
   note: clip(320),
   /** How the researched company positions against them (or could). */
@@ -216,7 +217,14 @@ const metaCodeSchema = z.object({
 export const researchToolSchema = z.object({
   person: personSchema,
   company: companySchema.optional(),
+  /** Direct competitors — same market, same buyer, wherever they're based. */
   competitors: z.array(competitorSchema).optional().transform((a) => a?.slice(0, 5)),
+  /**
+   * Competitors HEADQUARTERED in the company's home country/market — the
+   * local incumbents the prospect fights daily. Often disjoint from the
+   * global list; both matter for outreach framing.
+   */
+  domestic_competitors: z.array(competitorSchema).optional().transform((a) => a?.slice(0, 5)),
   commercials: commercialsSchema.optional(),
   outreach: outreachSchema,
   meta: metaModelSchema.optional(),
