@@ -45,7 +45,7 @@ Environment:
   PROXYCURL_API_KEY      optional — verified LinkedIn data for gated profiles
 
 Examples:
-  landermixer https://www.linkedin.com/in/satyanadella --pretty
+  landermixer https://www.linkedin.com/in/zigakerec/ --pretty
   landermixer https://linkedin.com/in/jane-doe --company-url https://acme.com | jq .outreach.hooks
   landermixer --csv prospects.csv --out results/ --concurrency 3
 `;
