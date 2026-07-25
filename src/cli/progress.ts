@@ -21,8 +21,11 @@ export function fail(msg: string): void {
   log(red("✗ ") + msg);
 }
 
-/** Progress renderer for a single research run. */
-export function makeProgressRenderer(quiet: boolean): (e: ProgressEvent) => void {
+/** Progress renderer for a single research/search run. */
+export function makeProgressRenderer(
+  quiet: boolean,
+  outputLabel = "writing dossier…",
+): (e: ProgressEvent) => void {
   if (quiet) return () => {};
   return (e) => {
     switch (e.type) {
@@ -33,7 +36,7 @@ export function makeProgressRenderer(quiet: boolean): (e: ProgressEvent) => void
         log(`  ${cyan("⌕")} ${e.query ? e.query : `search #${e.index}`}`);
         break;
       case "output_started":
-        log(dim("  writing dossier…"));
+        log(dim(`  ${outputLabel}`));
         break;
       case "done":
         log(dim(`  ${e.searchesUsed} searches used`));

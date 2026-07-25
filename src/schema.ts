@@ -264,3 +264,115 @@ export const researchInputSchema = z.object({
 });
 
 export type ResearchInput = z.infer<typeof researchInputSchema>;
+
+// ---- prospect search --------------------------------------------------------
+// searchProspects(): your own company URL in → inferred ICP + a list of
+// matching decision-makers at other companies. Same design rules as above.
+
+/**
+ * Keeps only well-formed linkedin.com/in/… profile URLs and silently drops
+ * everything else — company pages, constructed slugs, malformed strings —
+ * instead of failing the parse. Guarantees every surviving URL is valid
+ * input for researchInputSchema (--research chaining).
+ */
+const linkedinPersonUrl = z
+  .string()
+  .optional()
+  .transform((u) =>
+    u && u.length <= 2048 && /^https?:\/\/([^/\s]+\.)?linkedin\.com\/in\/./i.test(u)
+      ? u
+      : undefined,
+  );
+
+/** The ICP the search committed to — the user's verification surface. */
+export const icpSchema = z.object({
+  /** The USER's company (verified from their site), not a prospect's. */
+  company_name: clip(160),
+  /** Root domain, no protocol/path — e.g. "acme.com". Never truncated. */
+  company_domain: z.string().max(240).optional(),
+  /** 2-4 sentences on what they sell, grounded in the site — not invented. */
+  what_they_sell: clip(700),
+  category: clipOpt(160).optional(),
+  target_industries: z.array(clip(120)).optional().transform((a) => a?.slice(0, 6)),
+  /** e.g. "20-200 employees". */
+  target_company_size: clipOpt(200).optional(),
+  target_geographies: z.array(clip(120)).optional().transform((a) => a?.slice(0, 6)),
+  /** The titles that buy this product — drives the people search. */
+  buyer_titles: z.array(clip(120)).min(1).transform((a) => a.slice(0, 8)),
+  /** Events that make outreach timely (funding, hiring, expansion, …). */
+  buying_triggers: z.array(clip(240)).optional().transform((a) => a?.slice(0, 6)),
+});
+
+export const prospectLeadSchema = z.object({
+  full_name: clip(120),
+  title: clip(160),
+  /** The company this prospect works at. */
+  company: clip(160),
+  company_domain: z.string().max(240).optional(),
+  /** Only when the URL literally appeared in a search result — never constructed. */
+  linkedin_url: linkedinPersonUrl,
+  location: clipOpt(120).optional(),
+  /** "C-level", "VP", "Director", … */
+  seniority: clipOpt(60).optional(),
+  department: clipOpt(80).optional(),
+  /** Must tie back to the icp block, not generic flattery. */
+  why_relevant: clip(400),
+  /** REQUIRED: the page where this person's name AND role were seen. */
+  source_url: url,
+  /** "company team page", "conference speaker list", … */
+  source_note: clipOpt(240).optional(),
+  /** Timely signals attached to this prospect (hiring, funding, launch). */
+  signals: z.array(clip(240)).optional().transform((a) => a?.slice(0, 4)),
+  confidence: z.enum(["high", "medium", "low"]),
+});
+
+/** Model-fillable search meta. */
+const searchMetaModelSchema = z.object({
+  confidence: z.enum(["high", "medium", "low"]).optional(),
+  sources: z.array(sourceSchema).optional().transform((a) => a?.slice(0, 15)),
+  research_notes: clipOpt(900).optional(),
+});
+
+/** Code-filled search meta — injected by searchProspects() after parse. */
+const searchMetaCodeSchema = z.object({
+  searched_at: z.string(),
+  model: z.string(),
+  searches_used: z.number().min(0).optional(),
+  schema_version: z.string(),
+});
+
+/**
+ * Model-facing schema: everything EXCEPT the code-filled fields.
+ * This is what becomes the Anthropic tool input_schema.
+ */
+export const prospectSearchToolSchema = z.object({
+  icp: icpSchema,
+  prospects: z.array(prospectLeadSchema).transform((a) => a.slice(0, 25)),
+  meta: searchMetaModelSchema.optional(),
+});
+
+export const prospectSearchSchema = prospectSearchToolSchema.extend({
+  /** icp_source is code-filled: "provided" iff the caller passed a target. */
+  icp: icpSchema.extend({ icp_source: z.enum(["inferred", "provided"]) }),
+  meta: searchMetaModelSchema.merge(searchMetaCodeSchema),
+});
+
+export type ProspectSearch = z.infer<typeof prospectSearchSchema>;
+export type SearchToolOutput = z.infer<typeof prospectSearchToolSchema>;
+export type IcpProfile = ProspectSearch["icp"];
+export type ProspectLead = z.infer<typeof prospectLeadSchema>;
+
+// ---- search input -----------------------------------------------------------
+
+export const searchInputSchema = z.object({
+  /** YOUR company's website — the ICP is inferred from it. */
+  company_url: z.string().url(),
+  /** Describe your ideal customer yourself — skips ICP inference. */
+  target: z.string().max(600).optional(),
+  /** Extra context on what you sell — feeds the search. */
+  notes: z.string().max(600).optional(),
+  /** Prospects to find. Default 10, applied in code. */
+  count: z.number().int().min(1).max(25).optional(),
+});
+
+export type SearchInput = z.infer<typeof searchInputSchema>;

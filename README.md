@@ -1,8 +1,8 @@
 # landermixer
 
-**Deep prospect research from any LinkedIn URL. Structured JSON out.**
+**Deep prospect research from any LinkedIn URL — and prospect search from your own company URL. Structured JSON out.**
 
-One command runs a research agent that works through up to 13 targeted web searches — the person, their company, its global and home-market competitors, funding, news, hiring, traffic, pricing — and returns a single validated JSON dossier you can pipe anywhere.
+One command runs a research agent that works through up to 13 targeted web searches — the person, their company, its global and home-market competitors, funding, news, hiring, traffic, pricing — and returns a single validated JSON dossier you can pipe anywhere. Don't have a prospect list yet? [`landermixer search`](#prospect-search) starts from your own website and finds one.
 
 ```bash
 export ANTHROPIC_API_KEY=sk-ant-…
@@ -80,6 +80,46 @@ The CSV needs a `linkedin_url` column; `company_url`, `name`, `company`, `notes`
 
 JSON goes to **stdout**, progress to **stderr** — pipe-safe by design.
 
+## Prospect search
+
+No list yet? Point `landermixer search` at **your own website**. It reads what you sell, commits to an ICP (ideal customer profile — industries, company sizes, geographies, buyer titles), then hunts for matching decision-makers at other companies across team pages, conference agendas, news, and public profile snippets.
+
+```bash
+landermixer search https://www.your-company.com --pretty
+landermixer search https://acme.dev --target "Heads of RevOps at Series A-B SaaS in DACH"
+landermixer search https://acme.dev --count 8 --research --out prospects/
+```
+
+```jsonc
+{
+  "icp": {
+    "what_they_sell": "…grounded in your actual site, so you can sanity-check the inference…",
+    "buyer_titles": ["Founder / CEO", "CTO", "VP of Product"],
+    "target_industries": ["B2B SaaS", "E-commerce & retail"],
+    "icp_source": "inferred"          // "provided" when you pass --target
+    // … category, target_company_size, target_geographies, buying_triggers
+  },
+  "prospects": [
+    {
+      "full_name": "…", "title": "…", "company": "…",
+      "linkedin_url": "…",            // ONLY when the URL actually appeared in a
+                                      // search result — never constructed from a name
+      "why_relevant": "…ties back to the icp block…",
+      "source_url": "…",              // required: the page where name + role were seen
+      "signals": ["…funding, hiring, launches — reasons to reach out now…"],
+      "confidence": "high"            // high | medium | low, criteria in the docs
+    }
+  ],
+  "meta": { "sources": [{ "label": "…", "url": "…" }], "searches_used": 14, "schema_version": "1" }
+}
+```
+
+- `--target` skips ICP inference and adopts your own description — the sharpest results come from one good sentence about who you sell to.
+- `--research` chains every prospect that has a verified `linkedin.com/in` URL straight into the full research pipeline: with `--out <dir>` you get `search.json` plus one dossier file per prospect; without it, one combined JSON envelope on stdout. Prospects without an observed URL are skipped and reported, never guessed.
+- Fewer results than `--count` is intentional honesty: every listed person must be citable via `source_url`.
+
+The sample fixture [`examples/sample-search-output.json`](examples/sample-search-output.json) has a **real ICP inference** for our own site, but the prospect entries are **fictionalized** (invented people and `.example` domains) — we don't publish real third-party people in a git repo. Run it on your own site to see the real thing.
+
 ## Library
 
 ```ts
@@ -92,7 +132,21 @@ const dossier = await research(
 // dossier is fully typed (ProspectResearch) and already validated
 ```
 
-`researchMany(inputs, { concurrency })` runs a bounded pool with per-row error isolation. The zod schemas (`prospectResearchSchema`, `researchInputSchema`) are exported — validate stored dossiers, generate types, build on top.
+`researchMany(inputs, { concurrency })` runs a bounded pool with per-row error isolation. The zod schemas (`prospectResearchSchema`, `researchInputSchema`, `prospectSearchSchema`, `searchInputSchema`) are exported — validate stored dossiers, generate types, build on top.
+
+Search-then-research is a two-liner:
+
+```ts
+import { searchProspects, researchMany } from "landermixer";
+
+const found = await searchProspects({ company_url: "https://acme.com", count: 10 });
+const dossiers = await researchMany(
+  found.prospects
+    .filter((p) => p.linkedin_url)
+    .map((p) => ({ linkedin_url: p.linkedin_url!, name: p.full_name, company: p.company })),
+  { concurrency: 3 },
+);
+```
 
 ## Keys & cost
 
@@ -103,16 +157,18 @@ const dossier = await research(
 
 Keys load from env vars or a `.env` in the working directory. **Approximate cost per prospect** (you pay your providers directly, we take nothing):
 
-| Depth | Web searches | Typical cost |
-|---|---|---|
-| `standard` | up to 13 | ~$0.30–0.45 |
-| `deep` | up to 17 | ~$0.50–0.60 |
+| Command | Depth | Web searches | Typical cost |
+|---|---|---|---|
+| research | `standard` | up to 13 | ~$0.30–0.45 |
+| research | `deep` | up to 17 | ~$0.50–0.60 |
+| search | `standard` | up to 14 | ~$0.40–0.60 |
+| search | `deep` | up to 18 | ~$0.65–0.90 |
 
-Made of: Anthropic tokens (~$0.20–0.35), web-search fees ($0.01/search), optional Proxycurl (~$0.01).
+Made of: Anthropic tokens, web-search fees ($0.01/search), optional Proxycurl (~$0.01, research only).
 
 ## How it sources data
 
-The agent uses **public web search** (plus Proxycurl's API if you provide a key). It does not log into LinkedIn, does not scrape behind auth walls, and marks everything unverifiable as an estimate with its basis — or leaves it empty. `meta.sources` lists every page that informed the dossier; `meta.confidence` and `meta.research_notes` tell you how much to trust it.
+The agent uses **public web search** (plus Proxycurl's API if you provide a key). It does not log into LinkedIn, does not scrape behind auth walls, and marks everything unverifiable as an estimate with its basis — or leaves it empty. `meta.sources` lists every page that informed the dossier; `meta.confidence` and `meta.research_notes` tell you how much to trust it. In prospect search, LinkedIn profile URLs are included **only when they actually appeared in retrieved results** — never constructed from a name — and every prospect carries the `source_url` where their name and role were seen.
 
 ## Schema stability
 

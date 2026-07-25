@@ -21,7 +21,7 @@ export interface ResearchOptions {
   proxycurlApiKey?: string;
   /** Defaults to "claude-sonnet-4-6". */
   model?: string;
-  /** standard = 12 web searches, deep = 16. */
+  /** standard = 13 web searches, deep = 17. */
   depth?: ResearchDepth;
   /** Override the search budget directly (wins over depth). */
   webSearchMaxUses?: number;

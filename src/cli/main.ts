@@ -1,10 +1,13 @@
-// landermixer CLI — deep prospect research from any LinkedIn URL.
+// landermixer CLI — deep prospect research from any LinkedIn URL,
+// and prospect search from your own company URL.
 //
 //   npx landermixer <linkedin-url> [--company-url <url>] [--depth standard|deep]
 //   npx landermixer --csv prospects.csv --out results/ --concurrency 3
+//   npx landermixer search <your-company-url> [--target <icp>] [--research]
 //
 // JSON goes to stdout (pipe-friendly); all progress goes to stderr.
-// Exit codes: 0 ok · 1 usage/config error · 2 total failure · 3 partial batch failure.
+// Exit codes: 0 ok · 1 usage/config error · 2 total failure · 3 partial failure
+// (some batch rows or chained dossiers failed).
 
 import { parseArgs } from "node:util";
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
@@ -12,28 +15,40 @@ import { join } from "node:path";
 import { config as loadDotenv } from "dotenv";
 import { research } from "../research.js";
 import { researchMany } from "../batch.js";
+import { searchProspects } from "../search.js";
 import type { ResearchDepth } from "../research.js";
-import type { ResearchInput } from "../schema.js";
+import type { ProspectSearch, ResearchInput } from "../schema.js";
 import { parseProspectsCsv } from "./csv.js";
 import { makeProgressRenderer, log, ok, fail } from "./progress.js";
 
 loadDotenv();
 
-const HELP = `landermixer — deep prospect research from any LinkedIn URL. Structured JSON out.
+const HELP = `landermixer — prospect research and prospect search. Structured JSON out.
 
 Usage:
-  landermixer <linkedin-url> [options]         research one prospect
-  landermixer --csv <file> --out <dir> [opts]  research a CSV of prospects
+  landermixer <linkedin-url> [options]          research one prospect
+  landermixer --csv <file> --out <dir> [opts]   research a CSV of prospects
+  landermixer search <your-company-url> [opts]  find prospects from your own site
 
-Options:
+Research options:
   --company-url <url>    the prospect company's website (anchors company research)
   --notes <text>         anything you already know — feeds the research
-  --depth <d>            standard (13 searches, default) | deep (17 searches)
-  --model <id>           Anthropic model id (default claude-sonnet-4-6)
   --csv <file>           batch mode: CSV with a linkedin_url column
                          (optional columns: company_url, name, company, notes)
-  --out <file|dir>       write JSON to a file (single) or directory (batch)
-  --concurrency <n>      parallel researches in batch mode (default 3)
+  --depth <d>            standard (13 searches, default) | deep (17 searches)
+
+Search options:
+  --target <text>        describe your ideal customer yourself (skips inference)
+  --count <n>            prospects to find (default 10, max 25)
+  --research             chain every prospect with a verified linkedin.com/in
+                         URL into a full research dossier
+  --notes <text>         extra context on what you sell
+  --depth <d>            standard (14 searches, default) | deep (18 searches)
+
+Shared options:
+  --model <id>           Anthropic model id (default claude-sonnet-4-6)
+  --out <file|dir>       write JSON to a file (or a directory in batch/--research)
+  --concurrency <n>      parallel dossiers in batch / --research mode (default 3)
   --json                 compact JSON output (default when piped)
   --pretty               pretty-printed JSON (default on a TTY)
   --quiet                no progress output
@@ -46,8 +61,10 @@ Environment:
 
 Examples:
   landermixer https://www.linkedin.com/in/zigakerec/ --pretty
-  landermixer https://linkedin.com/in/jane-doe --company-url https://acme.com | jq .outreach.hooks
   landermixer --csv prospects.csv --out results/ --concurrency 3
+  landermixer search https://www.your-company.com --pretty
+  landermixer search https://acme.dev --target "Heads of RevOps at Series A-B SaaS in DACH"
+  landermixer search https://acme.dev --count 8 --research --out prospects/
 `;
 
 function slugify(s: string): string {
@@ -62,6 +79,31 @@ function slugify(s: string): string {
   );
 }
 
+/** "acme.com" → "https://acme.com"; anything that isn't a clean root domain → undefined. */
+function domainToUrl(domain: string | undefined): string | undefined {
+  return domain && /^[a-z0-9][a-z0-9.-]*\.[a-z]{2,}$/i.test(domain)
+    ? `https://${domain}`
+    : undefined;
+}
+
+type CliValues = {
+  "company-url"?: string;
+  notes?: string;
+  depth?: string;
+  model?: string;
+  csv?: string;
+  out?: string;
+  concurrency?: string;
+  target?: string;
+  count?: string;
+  research?: boolean;
+  json?: boolean;
+  pretty?: boolean;
+  quiet?: boolean;
+  help?: boolean;
+  version?: boolean;
+};
+
 async function main(): Promise<number> {
   const { values, positionals } = parseArgs({
     allowPositionals: true,
@@ -73,6 +115,9 @@ async function main(): Promise<number> {
       csv: { type: "string" },
       out: { type: "string" },
       concurrency: { type: "string" },
+      target: { type: "string" },
+      count: { type: "string" },
+      research: { type: "boolean" },
       json: { type: "boolean" },
       pretty: { type: "boolean" },
       quiet: { type: "boolean" },
@@ -110,6 +155,11 @@ async function main(): Promise<number> {
   const pretty = values.pretty ?? (process.stdout.isTTY && !values.json);
   const serialize = (obj: unknown) =>
     pretty ? JSON.stringify(obj, null, 2) : JSON.stringify(obj);
+
+  // ---- search mode ---------------------------------------------------------
+  if (positionals[0] === "search") {
+    return runSearch(values, positionals, depth, serialize);
+  }
 
   // ---- batch mode ----------------------------------------------------------
   if (values.csv) {
@@ -189,6 +239,161 @@ async function main(): Promise<number> {
     fail(err instanceof Error ? err.message : String(err));
     return 2;
   }
+}
+
+// ---- prospect search -------------------------------------------------------
+
+async function runSearch(
+  values: CliValues,
+  positionals: string[],
+  depth: ResearchDepth,
+  serialize: (obj: unknown) => string,
+): Promise<number> {
+  const rawUrl = positionals[1];
+  if (!rawUrl) {
+    process.stderr.write(HELP);
+    return 1;
+  }
+  // Friendly to bare domains: "acme.com" → "https://acme.com".
+  const companyUrl = /^https?:\/\//i.test(rawUrl) ? rawUrl : `https://${rawUrl}`;
+
+  const count = values.count === undefined ? 10 : Number(values.count);
+  if (!Number.isInteger(count) || count < 1 || count > 25) {
+    fail(`--count must be an integer between 1 and 25, got "${values.count}"`);
+    return 1;
+  }
+
+  let search: ProspectSearch;
+  try {
+    search = await searchProspects(
+      {
+        company_url: companyUrl,
+        target: values.target,
+        notes: values.notes,
+        count,
+      },
+      {
+        depth,
+        model: values.model,
+        onProgress: makeProgressRenderer(!!values.quiet, "writing prospect list…"),
+      },
+    );
+  } catch (err) {
+    fail(err instanceof Error ? err.message : String(err));
+    return 2;
+  }
+
+  // ---- plain search: one ProspectSearch JSON --------------------------------
+  if (!values.research) {
+    const out = serialize(search) + "\n";
+    if (values.out) {
+      writeFileSync(values.out, out);
+      ok(`written to ${values.out}`);
+    } else {
+      process.stdout.write(out);
+    }
+    return 0;
+  }
+
+  // ---- --research: chain found prospects into full dossiers -----------------
+  const withUrl = search.prospects.filter((p) => p.linkedin_url);
+  const skipped = search.prospects.filter((p) => !p.linkedin_url);
+  if (skipped.length > 0) {
+    log(
+      `${skipped.length} of ${search.prospects.length} prospects had no verified LinkedIn URL — skipped`,
+    );
+  }
+
+  const outDir = values.out;
+  if (outDir) {
+    mkdirSync(outDir, { recursive: true });
+    writeFileSync(join(outDir, "search.json"), serialize(search) + "\n");
+    ok(`search → ${join(outDir, "search.json")}`);
+  }
+
+  if (withUrl.length === 0) {
+    log("no prospects to research");
+    if (!outDir) {
+      const envelope = {
+        search,
+        dossiers: skipped.map((p) => ({
+          prospect: p.full_name,
+          ok: false,
+          skipped: true,
+          reason: "no verified linkedin_url",
+        })),
+      };
+      process.stdout.write(serialize(envelope) + "\n");
+    }
+    return 0;
+  }
+
+  const inputs: ResearchInput[] = withUrl.map((p) => ({
+    linkedin_url: p.linkedin_url!,
+    company_url: domainToUrl(p.company_domain),
+    name: p.full_name,
+    company: p.company,
+    notes: p.why_relevant,
+  }));
+  const concurrency = Number(values.concurrency ?? 3) || 3;
+
+  log(`researching ${inputs.length} prospects (concurrency ${concurrency})…`);
+  const results = await researchMany(inputs, {
+    depth,
+    model: values.model,
+    concurrency,
+    onRow: (r, done, total) => {
+      if (r.ok) {
+        const name = r.result.person.full_name;
+        if (outDir) {
+          const file = join(outDir, `${slugify(name)}.json`);
+          writeFileSync(file, serialize(r.result) + "\n");
+          ok(`[${done}/${total}] ${name} → ${file}`);
+        } else {
+          ok(`[${done}/${total}] ${name}`);
+        }
+      } else {
+        fail(`[${done}/${total}] ${r.input.linkedin_url}: ${r.error}`);
+      }
+    },
+  });
+
+  const failures = results.filter((r) => !r.ok).length;
+  log("");
+  log(`done: ${results.length - failures} dossiers ok, ${failures} failed, ${skipped.length} skipped`);
+
+  if (!outDir) {
+    // researchMany results are index-aligned with inputs/withUrl.
+    const envelope = {
+      search,
+      dossiers: [
+        ...results.map((r, i) =>
+          r.ok
+            ? {
+                prospect: withUrl[i]!.full_name,
+                linkedin_url: withUrl[i]!.linkedin_url,
+                ok: true as const,
+                dossier: r.result,
+              }
+            : {
+                prospect: withUrl[i]!.full_name,
+                linkedin_url: withUrl[i]!.linkedin_url,
+                ok: false as const,
+                error: r.error,
+              },
+        ),
+        ...skipped.map((p) => ({
+          prospect: p.full_name,
+          ok: false as const,
+          skipped: true,
+          reason: "no verified linkedin_url",
+        })),
+      ],
+    };
+    process.stdout.write(serialize(envelope) + "\n");
+  }
+
+  return failures > 0 ? 3 : 0;
 }
 
 main().then(

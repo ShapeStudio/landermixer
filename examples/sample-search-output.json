@@ -1,0 +1,115 @@
+{
+  "icp": {
+    "company_name": "Shape Labs (shape-labs.com)",
+    "company_domain": "shape-labs.com",
+    "what_they_sell": "Shape (shape-labs.com) is a Berlin/New York/Ljubljana AI-native process automation and venture studio. They rebuild business processes with custom AI-native software — including agentic workflows, RAG/LLM systems, process automation/RPA, data pipelines, analytics dashboards, internal AI tools, and marketing websites — to cut operating costs and eliminate busywork for digital businesses. They also build and operate their own AI SaaS products (ProductAI, Wondercut, MomentClip) and take on long-term client partnerships with equity arrangements. Minimum project size ~$25k; typical engagements run from MVP builds ($48k / 6 weeks) to multi-year transformation programmes.",
+    "target_industries": [
+      "E-commerce & D2C brands",
+      "SaaS / B2B software",
+      "Digital marketplaces",
+      "FinTech",
+      "MarTech / AdTech"
+    ],
+    "target_company_size": "Seed-to-Series C startups and mid-market digital companies (20–500 employees) with live software products and manual or ",
+    "target_geographies": [
+      "Berlin",
+      "Germany / DACH",
+      "New York",
+      "Ljubljana / CEE",
+      "EU / remote-first"
+    ],
+    "buyer_titles": [
+      "CTO",
+      "Co-Founder / CTO",
+      "VP of Engineering",
+      "Head of Product",
+      "VP Product",
+      "CPO",
+      "Head of Engineering",
+      "COO / Head of Operations"
+    ],
+    "buying_triggers": [
+      "Raising a new funding round and needing to scale operations efficiently",
+      "Hiring in engineering/product — signal of active build-out",
+      "Publicly discussing AI automation or digital transformation on LinkedIn",
+      "Legacy platform modernisation underway",
+      "Launching a new product line or marketplace expansion",
+      "Operating costly manual workflows (invoicing, reporting, content, customer ops)"
+    ],
+    "icp_source": "inferred"
+  },
+  "prospects": [
+    {
+      "full_name": "Mira Kovač",
+      "title": "Head of Operations",
+      "company": "Nordwind Logistics GmbH",
+      "company_domain": "nordwind-logistics.example",
+      "location": "Hamburg, Germany",
+      "seniority": "Head",
+      "department": "Operations",
+      "why_relevant": "Runs operations at a 200-person DACH logistics firm that just announced an automation push — matches the mid-market, no-in-house-AI-team ICP, and ops is where Shape's automation pods land first.",
+      "source_url": "https://example.com/nordwind-logistics/team",
+      "source_note": "company team page",
+      "signals": [
+        "Company blog post announcing a 2026 automation initiative",
+        "Three open roles in process engineering"
+      ],
+      "confidence": "high"
+    },
+    {
+      "full_name": "Tomas Berg",
+      "title": "Co-Founder & CTO",
+      "company": "Fjordline Analytics",
+      "company_domain": "fjordline-analytics.example",
+      "location": "Oslo, Norway",
+      "seniority": "C-level",
+      "department": "Engineering",
+      "why_relevant": "CTO of a seed-funded Nordic B2B SaaS that publicly committed to AI features in its Q3 roadmap without any ML hires on the team page — the exact gap Shape's fixed-scope MVP builds fill.",
+      "source_url": "https://example.com/fjordline/seed-round-announcement",
+      "source_note": "funding announcement naming the founding team",
+      "signals": ["Seed round announced this quarter"],
+      "confidence": "medium"
+    },
+    {
+      "full_name": "Elena Ruiz",
+      "title": "VP of Product",
+      "company": "Cartelle Commerce",
+      "company_domain": "cartelle.example",
+      "location": "London, United Kingdom",
+      "seniority": "VP",
+      "department": "Product",
+      "why_relevant": "Owns product at a mid-market e-commerce platform whose job posts mention 'AI-assisted merchandising' — an e-commerce AI use case Shape has shipped before with ProductAI.",
+      "source_url": "https://example.com/cartelle/leadership",
+      "source_note": "leadership page",
+      "signals": ["Job posting referencing AI-assisted merchandising"],
+      "confidence": "medium"
+    },
+    {
+      "full_name": "Jonas Pichler",
+      "title": "Head of Innovation",
+      "company": "Alpenmedia Group",
+      "company_domain": "alpenmedia.example",
+      "location": "Vienna, Austria",
+      "seniority": "Head",
+      "department": "Innovation",
+      "why_relevant": "Leads innovation at a DACH media group that spoke about AI content workflows at an industry conference — media/creative tooling is a listed target industry and a conference talk is a warm opener.",
+      "source_url": "https://example.com/media-days/speakers-2026",
+      "source_note": "conference speaker list",
+      "confidence": "low"
+    }
+  ],
+  "meta": {
+    "confidence": "medium",
+    "sources": [
+      { "label": "shape-labs.com — services and work", "url": "https://www.shape-labs.com/" },
+      { "label": "Example: candidate-company team page", "url": "https://example.com/nordwind-logistics/team" },
+      { "label": "Example: funding announcement", "url": "https://example.com/fjordline/seed-round-announcement" },
+      { "label": "Example: conference speaker list", "url": "https://example.com/media-days/speakers-2026" }
+    ],
+    "research_notes": "SAMPLE FIXTURE: the prospect entries in this file are fictionalized for privacy — invented people, companies, and .example domains that mirror a real run's field coverage and confidence spread. The icp block is the genuine inference a real run produced for shape-labs.com (11 searches). linkedin_url is omitted here because we don't publish real profile URLs in fixtures; live runs include it whenever the URL was actually observed in search results.",
+    "searched_at": "2026-07-25T22:29:18.579Z",
+    "model": "claude-sonnet-4-6",
+    "searches_used": 11,
+    "schema_version": "1"
+  }
+}

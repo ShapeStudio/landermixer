@@ -13,9 +13,12 @@
 
 import { Ajv2020 } from "ajv/dist/2020.js";
 import { zodToJsonSchema } from "zod-to-json-schema";
-import { researchToolSchema } from "../src/schema.js";
+import { prospectSearchToolSchema, researchToolSchema } from "../src/schema.js";
 
-const TOOL_SCHEMAS = [["record_research", researchToolSchema]] as const;
+const TOOL_SCHEMAS = [
+  ["record_research", researchToolSchema],
+  ["record_prospect_search", prospectSearchToolSchema],
+] as const;
 
 const ajv = new Ajv2020({ strict: false, validateFormats: false });
 
