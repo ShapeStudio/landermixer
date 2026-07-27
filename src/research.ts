@@ -3,6 +3,7 @@ import { zodToJsonSchema } from "zod-to-json-schema";
 import { callStructured, DEFAULT_MODEL, type OnProgress } from "./anthropic.js";
 import { fetchProxycurlProfile } from "./proxycurl.js";
 import {
+  normalizeMetaField,
   prospectResearchSchema,
   researchInputSchema,
   researchToolSchema,
@@ -31,6 +32,9 @@ export interface ResearchOptions {
 
 const SEARCH_BUDGET: Record<ResearchDepth, number> = { standard: 13, deep: 17 };
 
+/** Direct page fetches (web_fetch) — separate from the search budget. */
+const FETCH_BUDGET = 4;
+
 const SYSTEM_PROMPT = `You are a prospect-research analyst. Input: a LinkedIn profile URL (plus optional company URL and seller notes). Output: a deep, structured research dossier on the PERSON and their COMPANY, recorded via the record_research tool.
 
 The output is consumed programmatically (CRMs, outreach tooling, scripts) — completeness and honesty beat prose style. Fill every field you can verify; leave fields empty rather than guessing.
@@ -43,11 +47,13 @@ The output is consumed programmatically (CRMs, outreach tooling, scripts) — co
 
 # How to research
 
-Use web_search aggressively. Plan your searches (budget shown in the user message):
+You have TWO server tools: web_search (search the public web) and web_fetch (retrieve a specific URL directly). web_fetch works even when a site is not indexed by any search engine — when company_url is given, FETCH it directly before relying on search results about the company; also fetch pages that search snippets reference when you need the full content.
+
+Use them aggressively. Plan your searches (budget shown in the user message):
 
 1. \`site:linkedin.com/in "<name>"\` — the profile itself: headline, location, role, summary, education, past roles. Search engines often surface gated-profile content in snippets.
 2. \`"<name>" "<company>"\` — articles, podcasts, talks, conference bios.
-3. \`"<company>" about\` OR the company_url domain directly — official site, products, positioning, industry, HQ, founding year, employee count.
+3. \`"<company>" about\` AND — when company_url is given — web_fetch that URL directly (mandatory; the site may not be indexed at all): official site, products, positioning, industry, HQ, founding year, employee count.
 4. \`"<name>" twitter OR github OR substack\` — public social links + what they think about lately.
 5. \`"<company>" competitors\` OR \`"<company>" vs\` — 2-5 DIRECT competitors (same market, same buyer, wherever based). For each: where they stand, and how the researched company positions (or could position) against them.
 6. \`"<company>" competitors <HQ country>\` OR local industry roundups/rankings in the company's home market — 2-5 competitors HEADQUARTERED in the same country/home market. Fill domestic_competitors. These are the local incumbents the prospect fights daily and are often a DIFFERENT set from the global list; don't just copy search 5's results. Search in the local language when that surfaces better results.
@@ -76,6 +82,7 @@ With a deep budget, spend the extra searches on: a second news pass, executive-t
 - meta.research_notes: 1-3 sentences on what was hard to find or where you're estimating.
 
 # Rules
+- Write all output field values in English, regardless of the source pages' language. Keep proper nouns as-is.
 - Do not fabricate verifiable specifics (revenue, headcount, named clients, deal sizes). Unverified → leave empty, note it.
 - Distinguish what you read from what you inferred.
 - sources URLs must be pages you actually retrieved.
@@ -159,7 +166,7 @@ export async function research(
     .filter(Boolean)
     .join("\n");
 
-  const { output, searchesUsed } = await callStructured<unknown>({
+  const { output, searchesUsed, fetchesUsed } = await callStructured<unknown>({
     client,
     model,
     systemPrompt: SYSTEM_PROMPT,
@@ -171,14 +178,17 @@ export async function research(
     cacheSystem: true,
     webSearch: true,
     webSearchMaxUses: searchBudget,
+    webFetch: true,
+    webFetchMaxUses: FETCH_BUDGET,
     maxTokens: 8192,
     onProgress: opts.onProgress,
     signal: opts.signal,
   });
 
   // Models emit explicit nulls for unfillable optional fields — strip them
-  // before validation (see stripNulls docs).
-  const parsed = researchToolSchema.parse(stripNulls(output));
+  // before validation (see stripNulls docs) — and occasionally emit meta as
+  // a prose string (see normalizeMetaField docs).
+  const parsed = researchToolSchema.parse(normalizeMetaField(stripNulls(output)));
 
   // Code-filled meta — never trusted to the model.
   const result: ProspectResearch = {
@@ -188,6 +198,7 @@ export async function research(
       researched_at: new Date().toISOString(),
       model,
       searches_used: searchesUsed,
+      fetches_used: fetchesUsed,
       schema_version: SCHEMA_VERSION,
     },
   };

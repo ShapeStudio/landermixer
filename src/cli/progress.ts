@@ -35,11 +35,18 @@ export function makeProgressRenderer(
       case "search":
         log(`  ${cyan("⌕")} ${e.query ? e.query : `search #${e.index}`}`);
         break;
+      case "fetch":
+        log(`  ${cyan("⇣")} ${e.url ? e.url : `fetch #${e.index}`}`);
+        break;
       case "output_started":
         log(dim(`  ${outputLabel}`));
         break;
       case "done":
-        log(dim(`  ${e.searchesUsed} searches used`));
+        log(
+          dim(
+            `  ${e.searchesUsed} searches, ${e.fetchesUsed} page fetch${e.fetchesUsed === 1 ? "" : "es"} used`,
+          ),
+        );
         break;
     }
   };

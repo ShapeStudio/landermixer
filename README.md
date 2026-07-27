@@ -164,11 +164,11 @@ Keys load from env vars or a `.env` in the working directory. **Approximate cost
 | search | `standard` | up to 14 | ~$0.40–0.60 |
 | search | `deep` | up to 18 | ~$0.65–0.90 |
 
-Made of: Anthropic tokens, web-search fees ($0.01/search), optional Proxycurl (~$0.01, research only).
+Made of: Anthropic tokens, web-search fees ($0.01/search), optional Proxycurl (~$0.01, research only). Runs also make a few direct page fetches (your site, team pages) — fetches have no per-use fee; the fetched content bills as normal input tokens.
 
 ## How it sources data
 
-The agent uses **public web search** (plus Proxycurl's API if you provide a key). It does not log into LinkedIn, does not scrape behind auth walls, and marks everything unverifiable as an estimate with its basis — or leaves it empty. `meta.sources` lists every page that informed the dossier; `meta.confidence` and `meta.research_notes` tell you how much to trust it. In prospect search, LinkedIn profile URLs are included **only when they actually appeared in retrieved results** — never constructed from a name — and every prospect carries the `source_url` where their name and role were seen.
+The agent uses **public web search and direct page fetches** (plus Proxycurl's API if you provide a key). Any URL you provide — your own site in `search`, `--company-url` in research — is **fetched directly**, so it grounds the research even when the site isn't indexed by any search engine. It does not log into LinkedIn, does not scrape behind auth walls, and marks everything unverifiable as an estimate with its basis — or leaves it empty. `meta.sources` lists every page that informed the dossier; `meta.confidence` and `meta.research_notes` tell you how much to trust it. In prospect search, LinkedIn profile URLs are included **only when they actually appeared in retrieved results** — never constructed from a name — and every prospect carries the `source_url` where their name and role were seen.
 
 ## Schema stability
 

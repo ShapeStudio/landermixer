@@ -5,9 +5,10 @@ export const DEFAULT_MODEL = "claude-sonnet-4-6";
 export type ProgressEvent =
   | { type: "start"; model: string }
   | { type: "search"; query: string; index: number }
+  | { type: "fetch"; url: string; index: number }
   | { type: "thinking" }
   | { type: "output_started" }
-  | { type: "done"; searchesUsed: number };
+  | { type: "done"; searchesUsed: number; fetchesUsed: number };
 
 export type OnProgress = (event: ProgressEvent) => void;
 
@@ -15,17 +16,21 @@ export type OnProgress = (event: ProgressEvent) => void;
  * Run a tool-use call where the model is expected to ultimately call a
  * specific structured-output tool. Returns that tool call's input.
  *
- * If `webSearch` is true, the server-side web_search tool is added and
- * `tool_choice` stays on "auto" so the model can search freely before
- * calling the output tool. (Forcing tool_choice to a specific tool blocks
- * web_search entirely — they're mutually exclusive.)
+ * If `webSearch` is true, the server-side web_search tool is added. If
+ * `webFetch` is true, the server-side web_fetch tool is added — it retrieves
+ * a specific URL directly, which rescues sites that search engines haven't
+ * indexed (web_search can only find what's indexed). web_fetch only fetches
+ * URLs already present in the conversation or in prior search results.
  *
- * If `webSearch` is false, `tool_choice` is forced to the output tool for
- * deterministic single-call structured generation.
+ * With either server tool enabled, `tool_choice` stays on "auto" so the
+ * model can search/fetch freely before calling the output tool. (Forcing
+ * tool_choice to a specific tool blocks server tools entirely — they're
+ * mutually exclusive.) Otherwise `tool_choice` is forced to the output tool
+ * for deterministic single-call structured generation.
  *
  * Streams the response so callers get live progress events (one per web
- * search the model issues) — the CLI spinner and the web playground both
- * feed off `onProgress`.
+ * search or fetch the model issues) — the CLI spinner and the web
+ * playground both feed off `onProgress`.
  */
 export async function callStructured<T>(args: {
   client: Anthropic;
@@ -38,10 +43,12 @@ export async function callStructured<T>(args: {
   cacheSystem?: boolean;
   webSearch?: boolean;
   webSearchMaxUses?: number;
+  webFetch?: boolean;
+  webFetchMaxUses?: number;
   maxTokens?: number;
   onProgress?: OnProgress;
   signal?: AbortSignal;
-}): Promise<{ output: T; searchesUsed: number }> {
+}): Promise<{ output: T; searchesUsed: number; fetchesUsed: number }> {
   const model = args.model ?? DEFAULT_MODEL;
 
   const tool = {
@@ -58,12 +65,22 @@ export async function callStructured<T>(args: {
       max_uses: args.webSearchMaxUses ?? 3,
     } as unknown as Anthropic.ToolUnion);
   }
+  if (args.webFetch) {
+    tools.push({
+      type: "web_fetch_20250910",
+      name: "web_fetch",
+      max_uses: args.webFetchMaxUses ?? 4,
+      // Bound the token cost of a single fetched page.
+      max_content_tokens: 15000,
+    } as unknown as Anthropic.ToolUnion);
+  }
 
   const systemBlocks: Anthropic.TextBlockParam[] = args.cacheSystem
     ? [{ type: "text", text: args.systemPrompt, cache_control: { type: "ephemeral" } }]
     : [{ type: "text", text: args.systemPrompt }];
 
-  const toolChoice: Anthropic.MessageCreateParams["tool_choice"] = args.webSearch
+  const serverTools = Boolean(args.webSearch || args.webFetch);
+  const toolChoice: Anthropic.MessageCreateParams["tool_choice"] = serverTools
     ? { type: "auto" }
     : { type: "tool", name: args.toolName };
 
@@ -78,20 +95,29 @@ export async function callStructured<T>(args: {
       tool_choice: toolChoice,
       messages: [{ role: "user", content: args.userMessage }],
     },
-    { signal: args.signal },
+    {
+      signal: args.signal,
+      // web_fetch shipped behind this beta header; harmless once GA.
+      ...(args.webFetch
+        ? { headers: { "anthropic-beta": "web-fetch-2025-09-10" } }
+        : {}),
+    },
   );
 
-  // Surface per-search progress: each server_tool_use block is one web
-  // search; its input.query streams in via input_json_delta. We buffer the
-  // partial JSON per block and emit once the block closes.
+  // Surface per-search/per-fetch progress: each server_tool_use block is one
+  // web search or one page fetch; its input streams in via input_json_delta.
+  // We buffer the partial JSON per block and emit once the block closes.
   let searchesUsed = 0;
-  const partialInputs = new Map<number, { kind: "search" | "other"; json: string }>();
+  let fetchesUsed = 0;
+  const partialInputs = new Map<number, { kind: "search" | "fetch"; json: string }>();
 
   stream.on("streamEvent", (event) => {
     if (event.type === "content_block_start") {
       const block = event.content_block as { type?: string; name?: string };
       if (block.type === "server_tool_use" && block.name === "web_search") {
         partialInputs.set(event.index, { kind: "search", json: "" });
+      } else if (block.type === "server_tool_use" && block.name === "web_fetch") {
+        partialInputs.set(event.index, { kind: "fetch", json: "" });
       } else if (block.type === "tool_use") {
         args.onProgress?.({ type: "output_started" });
       }
@@ -112,16 +138,26 @@ export async function callStructured<T>(args: {
         }
         args.onProgress?.({ type: "search", query, index: searchesUsed });
         partialInputs.delete(event.index);
+      } else if (entry?.kind === "fetch") {
+        fetchesUsed += 1;
+        let url = "";
+        try {
+          url = (JSON.parse(entry.json || "{}") as { url?: string }).url ?? "";
+        } catch {
+          // partial JSON — leave url empty, still count the fetch
+        }
+        args.onProgress?.({ type: "fetch", url, index: fetchesUsed });
+        partialInputs.delete(event.index);
       }
     }
   });
 
   const response = await stream.finalMessage();
-  args.onProgress?.({ type: "done", searchesUsed });
+  args.onProgress?.({ type: "done", searchesUsed, fetchesUsed });
 
   for (const block of response.content) {
     if (block.type === "tool_use" && block.name === args.toolName) {
-      return { output: block.input as T, searchesUsed };
+      return { output: block.input as T, searchesUsed, fetchesUsed };
     }
   }
   throw new Error(

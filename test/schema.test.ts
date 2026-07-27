@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import {
+  normalizeMetaField,
   prospectResearchSchema,
   researchToolSchema,
   researchInputSchema,
@@ -217,6 +218,45 @@ test("prospect linkedin_url keeps /in/ profiles and drops everything else", () =
     const parsed = prospectLeadSchema.parse({ ...base, linkedin_url: bad });
     assert.equal(parsed.linkedin_url, undefined, `should drop: ${bad}`);
   }
+});
+
+test("string meta is salvaged as research_notes (live-run regression)", () => {
+  // A live knjigovid.si run emitted meta as a prose string, which failed the
+  // whole parse before normalizeMetaField existed.
+  const modelOutput = {
+    icp: {
+      company_name: "Acme",
+      what_they_sell: "s",
+      buyer_titles: ["CTO"],
+    },
+    prospects: [],
+    meta: "Site was hard to verify; ICP grounded in the fetched homepage.",
+  };
+  const parsed = prospectSearchToolSchema.parse(
+    normalizeMetaField(stripNulls(modelOutput)),
+  );
+  assert.equal(
+    parsed.meta?.research_notes,
+    "Site was hard to verify; ICP grounded in the fetched homepage.",
+  );
+
+  // A JSON-encoded meta string is recovered as the actual object.
+  const jsonMeta = {
+    ...modelOutput,
+    meta: JSON.stringify({ confidence: "high", research_notes: "clean run" }),
+  };
+  const parsed2 = prospectSearchToolSchema.parse(
+    normalizeMetaField(stripNulls(jsonMeta)),
+  );
+  assert.equal(parsed2.meta?.confidence, "high");
+  assert.equal(parsed2.meta?.research_notes, "clean run");
+
+  // Other non-object metas are dropped, not failed.
+  const numericMeta = { ...modelOutput, meta: 42 };
+  const parsed3 = prospectSearchToolSchema.parse(
+    normalizeMetaField(stripNulls(numericMeta)),
+  );
+  assert.equal(parsed3.meta, undefined);
 });
 
 test("search input schema validates url and count bounds", () => {

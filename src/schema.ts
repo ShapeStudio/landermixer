@@ -42,6 +42,35 @@ export function stripNulls(value: unknown): unknown {
   return value;
 }
 
+/**
+ * Models occasionally emit `meta` as a prose string instead of an object
+ * (seen in a live run). Salvage the string as research_notes — and drop any
+ * other non-object meta — rather than failing the whole run. meta is
+ * optional model-side; code fills the required fields after parse.
+ */
+export function normalizeMetaField(output: unknown): unknown {
+  if (!output || typeof output !== "object" || Array.isArray(output)) return output;
+  const o = output as Record<string, unknown>;
+  if ("meta" in o) {
+    if (typeof o.meta === "string") {
+      // Sometimes the string IS the meta object, JSON-encoded — recover it.
+      let salvaged: unknown;
+      try {
+        salvaged = JSON.parse(o.meta);
+      } catch {
+        salvaged = undefined;
+      }
+      o.meta =
+        salvaged && typeof salvaged === "object" && !Array.isArray(salvaged)
+          ? salvaged
+          : { research_notes: o.meta };
+    } else if (typeof o.meta !== "object" || o.meta === null || Array.isArray(o.meta)) {
+      delete o.meta;
+    }
+  }
+  return output;
+}
+
 const clip = (max: number) =>
   z.string().min(1).transform((s) => (s.length > max ? s.slice(0, max) : s));
 const clipOpt = (max: number) =>
@@ -205,6 +234,7 @@ const metaCodeSchema = z.object({
   researched_at: z.string(),
   model: z.string(),
   searches_used: z.number().min(0).optional(),
+  fetches_used: z.number().min(0).optional(),
   schema_version: z.string(),
 });
 
@@ -338,6 +368,7 @@ const searchMetaCodeSchema = z.object({
   searched_at: z.string(),
   model: z.string(),
   searches_used: z.number().min(0).optional(),
+  fetches_used: z.number().min(0).optional(),
   schema_version: z.string(),
 });
 

@@ -3,6 +3,7 @@ import { zodToJsonSchema } from "zod-to-json-schema";
 import { callStructured, DEFAULT_MODEL, type OnProgress } from "./anthropic.js";
 import type { ResearchDepth } from "./research.js";
 import {
+  normalizeMetaField,
   prospectSearchSchema,
   prospectSearchToolSchema,
   searchInputSchema,
@@ -27,6 +28,9 @@ export interface SearchProspectsOptions {
 
 const SEARCH_BUDGET: Record<ResearchDepth, number> = { standard: 14, deep: 18 };
 
+/** Direct page fetches (web_fetch) — separate from the search budget. */
+const FETCH_BUDGET = 5;
+
 const DEFAULT_COUNT = 10;
 
 const SYSTEM_PROMPT = `You are an outbound lead-generation researcher. Input: the URL of the SELLER's own company website (plus optional target-customer description and notes). Output: the ICP (ideal customer profile) you committed to, and a list of real, verifiable decision-makers at OTHER companies who match it — recorded via the record_prospect_search tool.
@@ -41,14 +45,16 @@ The output is consumed programmatically (CRMs, outreach tooling, scripts) — co
 
 # How to research
 
-Use web_search aggressively. Plan your searches (budget shown in the user message):
+You have TWO server tools: web_search (search the public web) and web_fetch (retrieve a specific URL directly). web_fetch works even when a site is not indexed by any search engine — use it for every URL you were given and for pages that search snippets reference.
 
-1. The company_url domain directly and/or \`site:<domain>\` — what they sell: products, pricing pages, positioning, category. This is the ICP foundation.
+Use them aggressively. Plan your work (budgets shown in the user message):
+
+1. MANDATORY FIRST STEP: web_fetch the company_url directly. The fetched page is the ground truth for what they sell — never skip this, and never substitute a search for it. If the homepage is thin, fetch 1-2 key subpages (pricing, product, about). Complement with \`site:<domain>\` search. This is the ICP foundation.
 2. \`"<company>" customers OR "case study" OR testimonials\` — who already buys. Existing customers are the strongest ICP evidence; note their industries, sizes, and the buyer titles involved.
 3. \`"<company>" alternatives OR competitors\` — confirm the market category and skim who the competitors sell to. Now COMMIT to an ICP: target industries, company size, geographies, and 3-6 buyer titles. Record it in the icp block. (If target was provided: do only search 1 for grounding, adopt the given ICP, and spend searches 2-3 on people instead.)
 4. \`top <category> companies <geography>\` OR industry directories, rankings, award lists — 5-10 candidate companies that fit the ICP.
 5-6. \`site:linkedin.com/in "<buyer title>" "<candidate company>"\` — direct people search. Search-engine snippets surface names, titles, and profile URLs. Repeat across candidate companies and buyer-title variants.
-7. \`"<candidate company>" team OR leadership OR about\` — official team pages naming the decision-maker. Often better than LinkedIn snippets, and citable.
+7. \`"<candidate company>" team OR leadership OR about\` — official team pages naming the decision-maker. Often better than LinkedIn snippets, and citable. web_fetch a team page directly when the snippet alone doesn't confirm name + role.
 8. \`<industry> conference speakers <year>\` OR podcast guests — named people with verified titles and public bios.
 9. \`"<candidate company>" hiring <relevant function>\` — companies hiring in the function the seller sells into are in active pain; attach as a signal.
 10. \`"<candidate company>" funding OR launch OR expansion <year>\` — trigger events that make outreach timely; attach to the matching prospect's signals.
@@ -58,7 +64,7 @@ With a deep budget, spend the extra searches on: a second geography or vertical 
 
 # Field rules
 
-- icp.what_they_sell: 2-4 sentences grounded in the seller's actual site — not invented.
+- icp.what_they_sell: 2-4 sentences grounded in the seller's ACTUAL site content (from the mandatory fetch) — not invented. If the fetch fails AND the domain appears in no search results, do NOT guess what the company sells from the domain name or the market context: record only what you verified, set meta.confidence to "low", explain the failure in meta.research_notes, and return few or zero prospects rather than prospects matched to a guessed ICP.
 - icp.buyer_titles: the titles that actually buy this product.
 - prospects[].linkedin_url: ONLY a linkedin.com/in/… URL that literally appeared in a search result you retrieved for THIS person. NEVER construct a slug from a name. No URL observed → leave the field empty; the prospect is still valid.
 - prospects[].source_url is REQUIRED — the page where you saw this person's name AND role. If you cannot cite one, do not list the person.
@@ -70,6 +76,7 @@ With a deep budget, spend the extra searches on: a second geography or vertical 
 - meta.research_notes: 1-3 sentences on ICP confidence and what was hard to find. If you return fewer prospects than asked, say why here.
 
 # Rules
+- Write all output field values in English, regardless of the website's language. Keep proper nouns as-is and local role titles alongside English (e.g. "Director (direktor)") where they help outreach.
 - Prefer 8 verified prospects over 15 guessed ones. Fewer than requested is fine.
 - Do not fabricate people, titles, or URLs. Every prospect must be traceable to a page you actually retrieved.
 - Distinguish what you read from what you inferred.
@@ -115,12 +122,12 @@ export async function searchProspects(
       : null,
     parsedInput.notes ? `\n# Seller notes\n${parsedInput.notes}` : null,
     `\nFind up to ${count} prospects across at least ${minCompanies} distinct companies.`,
-    `Search budget: up to ${searchBudget} web searches. Research deeply and call record_prospect_search with the ICP and every prospect you can cite.`,
+    `Budgets: up to ${searchBudget} web searches and up to ${FETCH_BUDGET} direct page fetches. Fetch the company website first, research deeply, and call record_prospect_search with the ICP and every prospect you can cite.`,
   ]
     .filter(Boolean)
     .join("\n");
 
-  const { output, searchesUsed } = await callStructured<unknown>({
+  const { output, searchesUsed, fetchesUsed } = await callStructured<unknown>({
     client,
     model,
     systemPrompt: SYSTEM_PROMPT,
@@ -132,14 +139,17 @@ export async function searchProspects(
     cacheSystem: true,
     webSearch: true,
     webSearchMaxUses: searchBudget,
+    webFetch: true,
+    webFetchMaxUses: FETCH_BUDGET,
     maxTokens: 8192,
     onProgress: opts.onProgress,
     signal: opts.signal,
   });
 
   // Models emit explicit nulls for unfillable optional fields — strip them
-  // before validation (see stripNulls docs).
-  const parsed = prospectSearchToolSchema.parse(stripNulls(output));
+  // before validation (see stripNulls docs) — and occasionally emit meta as
+  // a prose string (see normalizeMetaField docs).
+  const parsed = prospectSearchToolSchema.parse(normalizeMetaField(stripNulls(output)));
 
   // Code-filled fields — never trusted to the model.
   const result: ProspectSearch = {
@@ -153,6 +163,7 @@ export async function searchProspects(
       searched_at: new Date().toISOString(),
       model,
       searches_used: searchesUsed,
+      fetches_used: fetchesUsed,
       schema_version: SCHEMA_VERSION,
     },
   };
