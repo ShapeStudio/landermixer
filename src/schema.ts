@@ -71,10 +71,26 @@ export function normalizeMetaField(output: unknown): unknown {
   return output;
 }
 
-const clip = (max: number) =>
-  z.string().min(1).transform((s) => (s.length > max ? s.slice(0, max) : s));
-const clipOpt = (max: number) =>
-  z.string().transform((s) => (s.length > max ? s.slice(0, max) : s));
+/**
+ * Truncate-don't-fail, cutting at a word boundary so an over-long value reads
+ * as clipped rather than corrupted — a model that answers "2003 (incorporated)"
+ * for founded_year should yield "2003…", not "2003 (incorp". The ellipsis is
+ * spent from the budget, so the result is never longer than `max`.
+ */
+export function truncate(s: string, max: number): string {
+  if (s.length <= max) return s;
+  const hard = s.slice(0, max - 1);
+  // Start of the trailing whitespace run — i.e. the last complete word.
+  const boundary = hard.search(/\s\S*$/);
+  const trimmed = (boundary > 0 ? hard.slice(0, boundary) : hard).replace(
+    /[\s,;:.\-–—([{/]+$/,
+    "",
+  );
+  return `${trimmed || hard}…`;
+}
+
+const clip = (max: number) => z.string().min(1).transform((s) => truncate(s, max));
+const clipOpt = (max: number) => z.string().transform((s) => truncate(s, max));
 
 const url = z.string().url().max(2048);
 

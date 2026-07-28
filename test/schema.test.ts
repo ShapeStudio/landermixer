@@ -11,6 +11,7 @@ import {
   prospectLeadSchema,
   searchInputSchema,
   stripNulls,
+  truncate,
 } from "../src/schema.js";
 import { parseProspectsCsv, parseCsv } from "../src/cli/csv.js";
 import { nameFromLinkedinUrl } from "../src/research.js";
@@ -36,6 +37,24 @@ test("tool schema accepts a minimal model output", () => {
   };
   const parsed = researchToolSchema.parse(minimal);
   assert.equal(parsed.person.full_name, "Jane Doe");
+});
+
+test("truncate cuts at a word boundary and stays inside the budget", () => {
+  // The live case: a model answering founded_year with more than a year.
+  assert.equal(truncate("2003 (incorporated)", 12), "2003…");
+  // Nothing to cut.
+  assert.equal(truncate("2003", 12), "2003");
+  // No boundary to fall back to — a hard cut is still better than failing.
+  assert.equal(truncate("x".repeat(40), 12), `${"x".repeat(11)}…`);
+  // Dangling punctuation left by the cut is dropped.
+  assert.equal(truncate("Accounting services, tax advisory", 22), "Accounting services…");
+  for (const [text, max] of [
+    ["2003 (incorporated)", 12],
+    ["x".repeat(40), 12],
+    ["Accounting services, tax advisory", 22],
+  ] as const) {
+    assert.ok(truncate(text, max).length <= max, `${text} @ ${max}`);
+  }
 });
 
 test("tool schema truncates over-long strings instead of failing", () => {
