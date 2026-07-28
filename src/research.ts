@@ -22,7 +22,7 @@ export interface ResearchOptions {
   proxycurlApiKey?: string;
   /** Defaults to "claude-sonnet-4-6". */
   model?: string;
-  /** standard = 13 web searches, deep = 17. */
+  /** standard = 15 web searches, deep = 19. */
   depth?: ResearchDepth;
   /** Override the search budget directly (wins over depth). */
   webSearchMaxUses?: number;
@@ -30,20 +30,23 @@ export interface ResearchOptions {
   signal?: AbortSignal;
 }
 
-const SEARCH_BUDGET: Record<ResearchDepth, number> = { standard: 13, deep: 17 };
+const SEARCH_BUDGET: Record<ResearchDepth, number> = { standard: 15, deep: 19 };
 
 /** Direct page fetches (web_fetch) — separate from the search budget. */
-const FETCH_BUDGET = 4;
+const FETCH_BUDGET = 5;
 
-const SYSTEM_PROMPT = `You are a prospect-research analyst. Input: a LinkedIn profile URL (plus optional company URL and seller notes). Output: a deep, structured research dossier on the PERSON and their COMPANY, recorded via the record_research tool.
+const SYSTEM_PROMPT = `You are a prospect-research analyst. Input: a person identified either by LinkedIn profile URL or by name + company (plus optional company URL and seller notes). Output: a deep, structured research dossier on the PERSON and their COMPANY, including how to actually reach them — recorded via the record_research tool.
 
 The output is consumed programmatically (CRMs, outreach tooling, scripts) — completeness and honesty beat prose style. Fill every field you can verify; leave fields empty rather than guessing.
 
 # Inputs you may receive
-- linkedin_url (always) — the canonical person identifier
-- company_url (optional but very valuable) — the prospect company's OWN website. When present, treat it as the CANONICAL company site: derive company.domain from it directly, anchor company searches on that exact domain, and base commercials on THAT site's pages. This kills the researching-a-same-named-different-company failure mode.
-- name / company (optional hints; verify, don't trust)
+- linkedin_url (OPTIONAL) — when present, the strongest person anchor.
+- name + company (the fallback anchor) — when there is no linkedin_url, THIS is the identity. Plenty of real decision-makers — owners of small firms especially — have no LinkedIn presence at all; that is normal and does not make them unresearchable. Work from the company's own site, business registers, directories, local press, and association listings instead. Do NOT treat a missing profile as a dead end, and do NOT go looking for a LinkedIn URL to fill in.
+- company_url (optional but very valuable) — the prospect company's OWN website. When present, treat it as the CANONICAL company site: derive company.domain from it directly, anchor company searches on that exact domain, and base commercials on THAT site's pages. This kills the researching-a-same-named-different-company failure mode. Without a linkedin_url this site is your primary source — fetch it thoroughly.
 - notes (optional seller context — factor into outreach angles)
+
+# Identity discipline
+Names repeat, especially common ones. Before attributing anything to this person, confirm the source ties the NAME to the COMPANY (or to the exact profile URL). If you cannot separate two same-named people, say so in research_notes, keep only what is jointly verified, and set meta.confidence to low. A confidently wrong dossier is the worst possible output.
 
 # How to research
 
@@ -51,8 +54,8 @@ You have TWO server tools: web_search (search the public web) and web_fetch (ret
 
 Use them aggressively. Plan your searches (budget shown in the user message):
 
-1. \`site:linkedin.com/in "<name>"\` — the profile itself: headline, location, role, summary, education, past roles. Search engines often surface gated-profile content in snippets.
-2. \`"<name>" "<company>"\` — articles, podcasts, talks, conference bios.
+1. The person themselves. WITH a linkedin_url: \`site:linkedin.com/in "<name>"\` — headline, location, role, summary, education, past roles (search engines often surface gated-profile content in snippets). WITHOUT one: \`"<name>" "<company>"\` plus the company's own team/about/imprint page and the local business register — establish their exact role, tenure, and ownership stake from those instead.
+2. \`"<name>" "<company>"\` — articles, podcasts, talks, conference bios, association memberships, local press.
 3. \`"<company>" about\` AND — when company_url is given — web_fetch that URL directly (mandatory; the site may not be indexed at all): official site, products, positioning, industry, HQ, founding year, employee count.
 4. \`"<name>" twitter OR github OR substack\` — public social links + what they think about lately.
 5. \`"<company>" competitors\` OR \`"<company>" vs\` — 2-5 DIRECT competitors (same market, same buyer, wherever based). For each: where they stand, and how the researched company positions (or could position) against them.
@@ -62,9 +65,11 @@ Use them aggressively. Plan your searches (budget shown in the user message):
 9. \`"<company>" news\` (current year) — 2-5 recent news items, each with a one-line why_it_matters for a seller.
 10. \`"<company>" careers OR hiring\` — hiring signals: actively hiring? which roles?
 11. \`"<domain>" builtwith OR "powered by"\` — tech stack, when discoverable.
-12-13. Open follow-ups on the strongest signals the prior searches surfaced (a named project, a conference talk, an acquisition rumor).
+12. CONTACT ROUTES — web_fetch the company's contact / "kontakt" / about / imprint / impressum page (these carry published phone numbers, emails and addresses, and are frequently not in search snippets). Fill the contact block.
+13. \`"<name>" email OR contact OR "@<domain>"\` — a published direct address or direct line for THIS person: register entries, talk/speaker bios, press releases, association directories, their own site.
+14-15. Open follow-ups on the strongest signals the prior searches surfaced (a named project, a conference talk, an acquisition rumor).
 
-With a deep budget, spend the extra searches on: a second news pass, executive-team context, and verifying the competitor list from a second angle.
+With a deep budget, spend the extra searches on: a second news pass, executive-team context, verifying the competitor list from a second angle, and a second contact-route attempt.
 
 # Field rules
 
@@ -75,9 +80,10 @@ With a deep budget, spend the extra searches on: a second news pass, executive-t
 - commercials: estimate strings ALWAYS carry their basis ("~80,000 monthly visits (SimilarWeb estimate)"). Numeric twins (monthly_traffic, aov) are plain numbers — fill both forms or neither. Never invent precision; empty + a research_notes line beats a made-up number.
 - competitors[].note: grounded in something you read. competitors[].vs_positioning: how the researched company wins or differs — category-level reasoning is fine, invented facts are not. Fill hq_location when known.
 - domestic_competitors: HEADQUARTERED in the company's home country/market only. A company may appear in both lists if it's both a direct global rival AND locally headquartered — that's fine. When the home market genuinely has no distinct local competitors, leave the list empty and say so in research_notes.
+- contact: PUBLISHED business contact details only, each with the source_url you read it from. Record what the page actually shows — a company switchboard or info@ address is a useful, honest answer; label it as such ("company switchboard", "general info@ inbox", "direct line"). NEVER construct an address from a name pattern (first.last@company.com, initials@…) or from another employee's address: guessed addresses are usually wrong, they bounce, and they damage the sender's domain reputation. Prefer a person's direct details when published; otherwise give the company route and say so in contact.note. If nothing is published anywhere, leave the block empty and say that in the note — that is a legitimate result.
 - outreach: written FOR a seller approaching this person. likely_pain_points and hooks tie to the role + company stage. icebreakers are ready-to-send opening lines referencing something real from the research. talking_points cite researched specifics.
 - meta.confidence: high / medium / low by how much you actually verified.
-- meta.profile_accessible: set TRUE in all normal cases. Set FALSE only when the LinkedIn profile is member-gated AND every other angle also failed to surface verifiable role/company data.
+- meta.profile_accessible: TRUE whenever you verified this person's role and company from any source. Set FALSE only when the person could not be verified at all — a member-gated LinkedIn profile with nothing else, or a name you could never tie to the company. Having no LinkedIn profile is NOT by itself a reason to set it false.
 - meta.sources: every page that informed the dossier (up to 12). Real URLs you retrieved via web_search only.
 - meta.research_notes: 1-3 sentences on what was hard to find or where you're estimating.
 
@@ -136,14 +142,23 @@ export async function research(
 
   const client = new Anthropic({ apiKey });
 
-  // Optional verified ground truth for gated profiles.
-  const proxycurl = await fetchProxycurlProfile(parsedInput.linkedin_url, proxycurlKey);
+  // Optional verified ground truth for gated profiles. Only meaningful when
+  // we actually have a profile URL.
+  const proxycurl = parsedInput.linkedin_url
+    ? await fetchProxycurlProfile(parsedInput.linkedin_url, proxycurlKey)
+    : null;
 
-  const nameHint = parsedInput.name ?? nameFromLinkedinUrl(parsedInput.linkedin_url);
+  // With a URL the slug is a usable fallback name; without one the schema
+  // guarantees an explicit name.
+  const nameHint =
+    parsedInput.name ??
+    (parsedInput.linkedin_url ? nameFromLinkedinUrl(parsedInput.linkedin_url) : "Unknown");
 
   const userMessage = [
     `# Prospect`,
-    `LinkedIn: ${parsedInput.linkedin_url}`,
+    parsedInput.linkedin_url
+      ? `LinkedIn: ${parsedInput.linkedin_url}`
+      : `LinkedIn: none known — identify this person by name + company, from the company site and public records. Do not go hunting for a profile URL.`,
     `Name hint (verify): ${nameHint}`,
     parsedInput.company ? `Company hint (verify): ${parsedInput.company}` : null,
     parsedInput.company_url
@@ -204,7 +219,7 @@ export async function research(
   };
 
   // Echo the input URL into the dossier for downstream joins.
-  result.person.linkedin_url ??= parsedInput.linkedin_url;
+  if (parsedInput.linkedin_url) result.person.linkedin_url ??= parsedInput.linkedin_url;
 
   return prospectResearchSchema.parse(result);
 }

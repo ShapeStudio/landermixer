@@ -27,15 +27,18 @@ const HELP = `landermixer — prospect research and prospect search. Structured 
 
 Usage:
   landermixer <linkedin-url> [options]          research one prospect
+  landermixer --name <person> --company <org>   research someone with no LinkedIn
   landermixer --csv <file> --out <dir> [opts]   research a CSV of prospects
   landermixer search <your-company-url> [opts]  find prospects from your own site
 
 Research options:
   --company-url <url>    the prospect company's website (anchors company research)
+  --name <person>        person's name — required when there's no LinkedIn URL
+  --company <org>        their company — required when there's no LinkedIn URL
   --notes <text>         anything you already know — feeds the research
   --csv <file>           batch mode: CSV with a linkedin_url column
                          (optional columns: company_url, name, company, notes)
-  --depth <d>            standard (13 searches, default) | deep (17 searches)
+  --depth <d>            standard (15 searches, default) | deep (19 searches)
 
 Search options:
   --target <text>        describe your ideal customer yourself (skips inference)
@@ -63,6 +66,7 @@ Environment:
 
 Examples:
   landermixer https://www.linkedin.com/in/zigakerec/ --pretty
+  landermixer --name "Sabina Juhart" --company "xPLUS d.o.o." --company-url https://xplus.si
   landermixer --csv prospects.csv --out results/ --concurrency 3
   landermixer search https://www.your-company.com --pretty
   landermixer search https://acme.dev --target "Heads of RevOps at Series A-B SaaS in DACH"
@@ -90,6 +94,8 @@ function domainToUrl(domain: string | undefined): string | undefined {
 
 type CliValues = {
   "company-url"?: string;
+  name?: string;
+  company?: string;
   notes?: string;
   depth?: string;
   model?: string;
@@ -112,6 +118,8 @@ async function main(): Promise<number> {
     allowPositionals: true,
     options: {
       "company-url": { type: "string" },
+      name: { type: "string" },
+      company: { type: "string" },
       notes: { type: "string" },
       depth: { type: "string" },
       model: { type: "string" },
@@ -212,8 +220,14 @@ async function main(): Promise<number> {
   }
 
   // ---- single mode ---------------------------------------------------------
+  // Identify by profile URL, or by --name + --company for the many real
+  // decision-makers who simply aren't on LinkedIn.
   const linkedinUrl = positionals[0];
-  if (!linkedinUrl) {
+  if (!linkedinUrl && !(values.name && values.company)) {
+    if (values.name || values.company) {
+      fail("--name and --company must be used together when there's no LinkedIn URL");
+      return 1;
+    }
     process.stderr.write(HELP);
     return 1;
   }
@@ -223,6 +237,8 @@ async function main(): Promise<number> {
       {
         linkedin_url: linkedinUrl,
         company_url: values["company-url"],
+        name: values.name,
+        company: values.company,
         notes: values.notes,
       },
       {

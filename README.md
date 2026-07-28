@@ -1,8 +1,8 @@
 # landermixer
 
-**Deep prospect research from any LinkedIn URL — and prospect search from your own company URL. Structured JSON out.**
+**Deep prospect research on any decision-maker — and prospect search from your own company URL. Structured JSON out.**
 
-One command runs a research agent that works through up to 13 targeted web searches — the person, their company, its global and home-market competitors, funding, news, hiring, traffic, pricing — and returns a single validated JSON dossier you can pipe anywhere. Don't have a prospect list yet? [`landermixer search`](#prospect-search) starts from your own website and finds one.
+One command runs a research agent that works through up to 15 targeted web searches — the person, their company, its global and home-market competitors, funding, news, hiring, traffic, pricing, and published contact details — and returns a single validated JSON dossier you can pipe anywhere. A LinkedIn URL is the strongest anchor, but it isn't required: `--name` + `--company` works for the many owners and directors who simply aren't on LinkedIn. Don't have a prospect list yet? [`landermixer search`](#prospect-search) starts from your own website and finds one.
 
 ```bash
 export ANTHROPIC_API_KEY=sk-ant-…
@@ -33,6 +33,11 @@ npx landermixer https://www.linkedin.com/in/zigakerec/ --company-url https://www
     "pricing_model": "project + retainer B2B, equity co-builds",
     "typical_price_points": ["Process automation: cuts ops cost from ~€2,000/mo to ~€300/mo"]
     // … web_traffic_estimate + numeric twins for downstream math
+  },
+  "contact": {
+    "emails": [{ "value": "hello@shape-labs.com", "label": "general inbox", "source_url": "https://www.shape-labs.com/contact" }],
+    "phones": [{ "value": "+386 …", "label": "company switchboard", "source_url": "https://www.shape-labs.com/contact" }]
+    // … address, contact_pages, social_profiles, note — published-and-cited only
   },
   "outreach": {
     "likely_pain_points": ["Standing out against cheap offshore dev shops…"],
@@ -68,6 +73,13 @@ landermixer <linkedin-url> --pretty
 landermixer https://linkedin.com/in/jane-doe --company-url https://acme.com
 landermixer https://linkedin.com/in/jane-doe --json | jq '.outreach.hooks'
 landermixer https://linkedin.com/in/jane-doe --depth deep --out jane.json
+```
+
+**No LinkedIn profile?** Anchor on the person's name and their company instead — the agent identifies them from the company site and public records, and never invents a profile URL to fill the gap.
+
+```bash
+landermixer --name "Jane Doe" --company "Acme d.o.o." --company-url https://acme.com
+landermixer --name "Jane Doe" --company "Acme d.o.o." --json | jq '.contact'
 ```
 
 **Batch (CSV)**
@@ -160,8 +172,8 @@ Keys load from env vars or a `.env` in the working directory. **Approximate cost
 
 | Command | Depth | Web searches | Typical cost |
 |---|---|---|---|
-| research | `standard` | up to 13 | ~$0.30–0.45 |
-| research | `deep` | up to 17 | ~$0.50–0.60 |
+| research | `standard` | up to 15 | ~$0.35–0.50 |
+| research | `deep` | up to 19 | ~$0.55–0.70 |
 | search | `standard` | up to 14 (+ profile lookup) | ~$0.45–0.70 |
 | search | `deep` | up to 18 (+ profile lookup) | ~$0.70–1.00 |
 
@@ -170,6 +182,8 @@ Made of: Anthropic tokens, web-search fees ($0.01/search), optional Proxycurl (~
 ## How it sources data
 
 The agent uses **public web search and direct page fetches** (plus Proxycurl's API if you provide a key). Any URL you provide — your own site in `search`, `--company-url` in research — is **fetched directly**, so it grounds the research even when the site isn't indexed by any search engine. It does not log into LinkedIn, does not scrape behind auth walls, and marks everything unverifiable as an estimate with its basis — or leaves it empty. `meta.sources` lists every page that informed the dossier; `meta.confidence` and `meta.research_notes` tell you how much to trust it. In prospect search, LinkedIn profile URLs are included **only when they actually appeared in retrieved results** — never constructed from a name — and every prospect carries the `source_url` where their name and role were seen. A follow-up pass searches specifically for the profiles the main search couldn't cite, under the same rule: found or empty, never guessed.
+
+The `contact` block follows the same discipline. Every address and number is one the agent actually read on a public page, carrying the `source_url` it came from — company contact and imprint pages, business registers, conference listings. It never derives an address from a name pattern (`first.last@company.com`) or from a colleague's address: guessed addresses mostly bounce, and bounces damage your sending domain. When a person publishes nothing, the block stays empty and `contact.note` says so.
 
 ## Schema stability
 

@@ -193,6 +193,35 @@ export const commercialsSchema = z.object({
   typical_price_points: z.array(clip(120)).optional().transform((a) => a?.slice(0, 6)),
 });
 
+// ---- contact ----------------------------------------------------------------
+// How to actually reach this person. PUBLISHED business contact details only —
+// company contact/imprint pages, professional directories, registers, talk
+// bios. Never a pattern-guessed address (first.last@company.com), because a
+// guessed address is both wrong most of the time and a deliverability
+// hazard; every entry carries the page it was read from.
+
+export const contactItemSchema = z.object({
+  /** The address / number itself, exactly as published. */
+  value: clip(200),
+  /** Who it reaches: "company switchboard", "direct line", "info@ inbox", … */
+  label: clipOpt(80).optional(),
+  /** Page it was published on. */
+  source_url: url.optional(),
+});
+
+export const contactSchema = z.object({
+  emails: z.array(contactItemSchema).optional().transform((a) => a?.slice(0, 5)),
+  phones: z.array(contactItemSchema).optional().transform((a) => a?.slice(0, 5)),
+  /** Office / registered address when published. */
+  address: clipOpt(240).optional(),
+  /** Contact forms, booking links, "get in touch" pages. */
+  contact_pages: z.array(url).optional().transform((a) => a?.slice(0, 4)),
+  /** Where the person's own profiles live (personal site, X, GitHub…). */
+  social_profiles: z.array(url).optional().transform((a) => a?.slice(0, 5)),
+  /** Honest note: what's reachable, what isn't, and the best route in. */
+  note: clipOpt(400).optional(),
+});
+
 // ---- outreach -------------------------------------------------------------
 
 export const outreachSchema = z.object({
@@ -256,6 +285,8 @@ export const researchToolSchema = z.object({
    */
   domestic_competitors: z.array(competitorSchema).optional().transform((a) => a?.slice(0, 5)),
   commercials: commercialsSchema.optional(),
+  /** Published ways to reach this person — see contactSchema. */
+  contact: contactSchema.optional(),
   outreach: outreachSchema,
   meta: metaModelSchema.optional(),
 });
@@ -272,26 +303,39 @@ export type Person = z.infer<typeof personSchema>;
 export type Company = z.infer<typeof companySchema>;
 export type Competitor = z.infer<typeof competitorSchema>;
 export type Commercials = z.infer<typeof commercialsSchema>;
+export type Contact = z.infer<typeof contactSchema>;
 export type Outreach = z.infer<typeof outreachSchema>;
 
 // ---- input ----------------------------------------------------------------
 
-export const researchInputSchema = z.object({
-  linkedin_url: z
-    .string()
-    .url()
-    .refine((u) => /linkedin\.com\/in\//i.test(u), {
-      message: "must be a linkedin.com/in/… profile URL",
-    }),
-  /** The prospect company's website — anchors company research on the exact domain. */
-  company_url: z.string().url().optional(),
-  /** Known name; otherwise derived from the URL slug and verified by research. */
-  name: z.string().max(120).optional(),
-  /** Known company; otherwise resolved by research. */
-  company: z.string().max(120).optional(),
-  /** Anything you already know — feeds the research context. */
-  notes: z.string().max(600).optional(),
-});
+/**
+ * A prospect can be identified two ways: by LinkedIn profile URL (the
+ * strongest anchor), or — for the many real decision-makers who simply
+ * aren't on LinkedIn — by name + company, in which case the company site
+ * and public records carry the research.
+ */
+export const researchInputSchema = z
+  .object({
+    linkedin_url: z
+      .string()
+      .url()
+      .refine((u) => /linkedin\.com\/in\//i.test(u), {
+        message: "must be a linkedin.com/in/… profile URL",
+      })
+      .optional(),
+    /** The prospect company's website — anchors company research on the exact domain. */
+    company_url: z.string().url().optional(),
+    /** Known name; otherwise derived from the URL slug and verified by research. */
+    name: z.string().max(120).optional(),
+    /** Known company; otherwise resolved by research. */
+    company: z.string().max(120).optional(),
+    /** Anything you already know — feeds the research context. */
+    notes: z.string().max(600).optional(),
+  })
+  .refine((v) => Boolean(v.linkedin_url) || Boolean(v.name && v.company), {
+    message:
+      "provide linkedin_url, or name + company (a person needs at least one identity anchor)",
+  });
 
 export type ResearchInput = z.infer<typeof researchInputSchema>;
 

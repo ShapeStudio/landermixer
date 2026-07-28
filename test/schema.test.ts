@@ -100,6 +100,36 @@ test("input schema rejects non-LinkedIn URLs", () => {
   );
 });
 
+test("input schema accepts name + company as an anchor when there's no profile", () => {
+  assert.doesNotThrow(() =>
+    researchInputSchema.parse({ name: "Sabina Juhart", company: "xPLUS d.o.o." }),
+  );
+  // Half an anchor is not an anchor — a bare name can't be pinned to a person.
+  assert.throws(() => researchInputSchema.parse({ name: "Sabina Juhart" }));
+  assert.throws(() => researchInputSchema.parse({ company: "xPLUS d.o.o." }));
+  assert.throws(() => researchInputSchema.parse({ company_url: "https://xplus.si" }));
+});
+
+test("tool schema takes published contact details and caps them", () => {
+  const parsed = researchToolSchema.parse({
+    person: { full_name: "Jane Doe" },
+    contact: {
+      emails: Array.from({ length: 9 }, (_, i) => ({
+        value: `info${i}@acme.example`,
+        label: "info inbox",
+        source_url: "https://acme.example/contact",
+      })),
+      phones: [{ value: "+386 1 234 5678", label: "company switchboard" }],
+      contact_pages: ["https://acme.example/contact"],
+      note: "No personal address published anywhere.",
+    },
+    outreach: { role_summary: "r", likely_pain_points: ["p"], hooks: ["h"] },
+  });
+  assert.equal(parsed.contact?.emails?.length, 5);
+  assert.equal(parsed.contact?.phones?.[0]?.value, "+386 1 234 5678");
+  assert.equal(parsed.contact?.contact_pages?.length, 1);
+});
+
 test("nameFromLinkedinUrl derives a pretty name and drops hash suffixes", () => {
   assert.equal(
     nameFromLinkedinUrl("https://www.linkedin.com/in/ziga-kerec-72b3a8"),
