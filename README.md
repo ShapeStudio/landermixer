@@ -115,6 +115,7 @@ landermixer search https://acme.dev --count 8 --research --out prospects/
 ```
 
 - `--target` skips ICP inference and adopts your own description — the sharpest results come from one good sentence about who you sell to.
+- Prospects found on team pages, business registers, or conference listings often have no profile URL attached. A targeted lookup pass then searches for each one specifically (`--no-profile-lookup` to skip it) — still refusing to guess: people it can't find stay empty rather than getting a plausible dead link.
 - `--research` chains every prospect that has a verified `linkedin.com/in` URL straight into the full research pipeline: with `--out <dir>` you get `search.json` plus one dossier file per prospect; without it, one combined JSON envelope on stdout. Prospects without an observed URL are skipped and reported, never guessed.
 - Fewer results than `--count` is intentional honesty: every listed person must be citable via `source_url`.
 
@@ -161,14 +162,14 @@ Keys load from env vars or a `.env` in the working directory. **Approximate cost
 |---|---|---|---|
 | research | `standard` | up to 13 | ~$0.30–0.45 |
 | research | `deep` | up to 17 | ~$0.50–0.60 |
-| search | `standard` | up to 14 | ~$0.40–0.60 |
-| search | `deep` | up to 18 | ~$0.65–0.90 |
+| search | `standard` | up to 14 (+ profile lookup) | ~$0.45–0.70 |
+| search | `deep` | up to 18 (+ profile lookup) | ~$0.70–1.00 |
 
 Made of: Anthropic tokens, web-search fees ($0.01/search), optional Proxycurl (~$0.01, research only). Runs also make a few direct page fetches (your site, team pages) — fetches have no per-use fee; the fetched content bills as normal input tokens.
 
 ## How it sources data
 
-The agent uses **public web search and direct page fetches** (plus Proxycurl's API if you provide a key). Any URL you provide — your own site in `search`, `--company-url` in research — is **fetched directly**, so it grounds the research even when the site isn't indexed by any search engine. It does not log into LinkedIn, does not scrape behind auth walls, and marks everything unverifiable as an estimate with its basis — or leaves it empty. `meta.sources` lists every page that informed the dossier; `meta.confidence` and `meta.research_notes` tell you how much to trust it. In prospect search, LinkedIn profile URLs are included **only when they actually appeared in retrieved results** — never constructed from a name — and every prospect carries the `source_url` where their name and role were seen.
+The agent uses **public web search and direct page fetches** (plus Proxycurl's API if you provide a key). Any URL you provide — your own site in `search`, `--company-url` in research — is **fetched directly**, so it grounds the research even when the site isn't indexed by any search engine. It does not log into LinkedIn, does not scrape behind auth walls, and marks everything unverifiable as an estimate with its basis — or leaves it empty. `meta.sources` lists every page that informed the dossier; `meta.confidence` and `meta.research_notes` tell you how much to trust it. In prospect search, LinkedIn profile URLs are included **only when they actually appeared in retrieved results** — never constructed from a name — and every prospect carries the `source_url` where their name and role were seen. A follow-up pass searches specifically for the profiles the main search couldn't cite, under the same rule: found or empty, never guessed.
 
 ## Schema stability
 
