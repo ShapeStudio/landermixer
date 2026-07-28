@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import { callStructured, DEFAULT_MODEL, type OnProgress } from "./anthropic.js";
+import { resolveLinkedinUrls, LOOKUP_MAX_PEOPLE } from "./linkedin-lookup.js";
 import type { ResearchDepth } from "./research.js";
 import {
   normalizeMetaField,
@@ -22,6 +23,13 @@ export interface SearchProspectsOptions {
   depth?: ResearchDepth;
   /** Override the search budget directly (wins over depth). */
   webSearchMaxUses?: number;
+  /**
+   * After the search, run a targeted pass to find LinkedIn profile URLs for
+   * prospects that came back without one (default true). Costs a few extra
+   * searches; makes those prospects researchable. It still never guesses a
+   * URL — see linkedin-lookup.ts.
+   */
+  resolveLinkedinUrls?: boolean;
   onProgress?: OnProgress;
   signal?: AbortSignal;
 }
@@ -151,6 +159,38 @@ export async function searchProspects(
   // a prose string (see normalizeMetaField docs).
   const parsed = prospectSearchToolSchema.parse(normalizeMetaField(stripNulls(output)));
 
+  // Prospects sourced from team pages, registers, or conference listings
+  // often arrive without a profile URL. One targeted pass fills in the ones
+  // that are actually findable — it never guesses (see linkedin-lookup.ts).
+  let lookupSearches = 0;
+  if (opts.resolveLinkedinUrls !== false) {
+    const missing = parsed.prospects
+      .map((prospect, index) => ({ prospect, index }))
+      .filter(({ prospect }) => !prospect.linkedin_url)
+      .slice(0, LOOKUP_MAX_PEOPLE);
+
+    if (missing.length > 0) {
+      const { urls, searchesUsed: used } = await resolveLinkedinUrls(
+        missing.map(({ prospect }) => ({
+          full_name: prospect.full_name,
+          company: prospect.company,
+          title: prospect.title,
+        })),
+        {
+          client,
+          model,
+          onProgress: opts.onProgress,
+          signal: opts.signal,
+        },
+      );
+      lookupSearches = used;
+      urls.forEach((url, i) => {
+        const target = missing[i];
+        if (url && target) parsed.prospects[target.index]!.linkedin_url = url;
+      });
+    }
+  }
+
   // Code-filled fields — never trusted to the model.
   const result: ProspectSearch = {
     ...parsed,
@@ -162,7 +202,7 @@ export async function searchProspects(
       ...(parsed.meta ?? {}),
       searched_at: new Date().toISOString(),
       model,
-      searches_used: searchesUsed,
+      searches_used: searchesUsed + lookupSearches,
       fetches_used: fetchesUsed,
       schema_version: SCHEMA_VERSION,
     },

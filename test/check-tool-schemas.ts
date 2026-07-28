@@ -14,10 +14,12 @@
 import { Ajv2020 } from "ajv/dist/2020.js";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import { prospectSearchToolSchema, researchToolSchema } from "../src/schema.js";
+import { lookupToolSchema } from "../src/linkedin-lookup.js";
 
 const TOOL_SCHEMAS = [
   ["record_research", researchToolSchema],
   ["record_prospect_search", prospectSearchToolSchema],
+  ["record_profile_urls", lookupToolSchema],
 ] as const;
 
 const ajv = new Ajv2020({ strict: false, validateFormats: false });

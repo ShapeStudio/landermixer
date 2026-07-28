@@ -42,6 +42,8 @@ Search options:
   --count <n>            prospects to find (default 10, max 25)
   --research             chain every prospect with a verified linkedin.com/in
                          URL into a full research dossier
+  --no-profile-lookup    skip the pass that finds LinkedIn URLs for prospects
+                         the search couldn't cite one for (saves a few searches)
   --notes <text>         extra context on what you sell
   --depth <d>            standard (14 searches, default) | deep (18 searches)
 
@@ -97,6 +99,7 @@ type CliValues = {
   target?: string;
   count?: string;
   research?: boolean;
+  "no-profile-lookup"?: boolean;
   json?: boolean;
   pretty?: boolean;
   quiet?: boolean;
@@ -118,6 +121,7 @@ async function main(): Promise<number> {
       target: { type: "string" },
       count: { type: "string" },
       research: { type: "boolean" },
+      "no-profile-lookup": { type: "boolean" },
       json: { type: "boolean" },
       pretty: { type: "boolean" },
       quiet: { type: "boolean" },
@@ -275,6 +279,7 @@ async function runSearch(
       {
         depth,
         model: values.model,
+        resolveLinkedinUrls: !values["no-profile-lookup"],
         onProgress: makeProgressRenderer(!!values.quiet, "writing prospect list…"),
       },
     );
