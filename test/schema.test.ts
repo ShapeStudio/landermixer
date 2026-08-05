@@ -317,6 +317,14 @@ test("search input schema validates url and count bounds", () => {
   assert.throws(() => searchInputSchema.parse({ company_url: "https://acme.com", count: 26 }));
 });
 
+test("search input caps the exclude list instead of failing", () => {
+  const parsed = searchInputSchema.parse({
+    company_url: "https://acme.com",
+    exclude: Array.from({ length: 120 }, (_, i) => `Person ${i} (Co ${i})`),
+  });
+  assert.equal(parsed.exclude?.length, 80);
+});
+
 test("prospects csv requires linkedin_url header and maps optional columns", () => {
   const rows = parseProspectsCsv(
     "linkedin_url,company_url,name\nhttps://linkedin.com/in/a,https://a.com,Ann\nhttps://linkedin.com/in/b,,\n",

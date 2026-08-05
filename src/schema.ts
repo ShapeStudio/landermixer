@@ -464,6 +464,15 @@ export const searchInputSchema = z.object({
   notes: z.string().max(600).optional(),
   /** Prospects to find. Default 10, applied in code. */
   count: z.number().int().min(1).max(25).optional(),
+  /**
+   * People already known — "Name (Company)" strings. The search is told to
+   * find OTHERS, which is what makes repeated batch rounds productive
+   * instead of rediscovering the same team pages.
+   */
+  exclude: z
+    .array(z.string().max(200))
+    .optional()
+    .transform((a) => a?.slice(0, 80)),
 });
 
 export type SearchInput = z.infer<typeof searchInputSchema>;

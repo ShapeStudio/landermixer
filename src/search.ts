@@ -129,6 +129,9 @@ export async function searchProspects(
       ? `\n# Target customer (provided by the seller — adopt as the ICP)\n${parsedInput.target}`
       : null,
     parsedInput.notes ? `\n# Seller notes\n${parsedInput.notes}` : null,
+    parsedInput.exclude?.length
+      ? `\n# Already known — do NOT return these people (find others, ideally at other companies)\n${parsedInput.exclude.map((p) => `- ${p}`).join("\n")}`
+      : null,
     `\nFind up to ${count} prospects across at least ${minCompanies} distinct companies.`,
     `Budgets: up to ${searchBudget} web searches and up to ${FETCH_BUDGET} direct page fetches. Fetch the company website first, research deeply, and call record_prospect_search with the ICP and every prospect you can cite.`,
   ]
