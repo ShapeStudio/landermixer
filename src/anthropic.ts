@@ -48,6 +48,13 @@ export async function callStructured<T>(args: {
   maxTokens?: number;
   onProgress?: OnProgress;
   signal?: AbortSignal;
+  /**
+   * Route through the Message Batches API: same request, half the token
+   * price, minutes of latency instead of seconds (Anthropic guarantees
+   * completion within an hour; most finish far sooner). Progress events
+   * degrade to start/done — batches don't stream.
+   */
+  batch?: boolean;
 }): Promise<{ output: T; searchesUsed: number; fetchesUsed: number }> {
   const model = args.model ?? DEFAULT_MODEL;
 
@@ -86,23 +93,63 @@ export async function callStructured<T>(args: {
 
   args.onProgress?.({ type: "start", model });
 
-  const stream = args.client.messages.stream(
-    {
-      model,
-      max_tokens: args.maxTokens ?? 4096,
-      system: systemBlocks,
-      tools,
-      tool_choice: toolChoice,
-      messages: [{ role: "user", content: args.userMessage }],
-    },
-    {
-      signal: args.signal,
-      // web_fetch shipped behind this beta header; harmless once GA.
-      ...(args.webFetch
-        ? { headers: { "anthropic-beta": "web-fetch-2025-09-10" } }
-        : {}),
-    },
-  );
+  const requestParams = {
+    model,
+    max_tokens: args.maxTokens ?? 4096,
+    system: systemBlocks,
+    tools,
+    tool_choice: toolChoice,
+    messages: [{ role: "user" as const, content: args.userMessage }],
+  };
+  const requestOptions = args.webFetch
+    ? { headers: { "anthropic-beta": "web-fetch-2025-09-10" } }
+    : {};
+
+  if (args.batch) {
+    const batch = await args.client.messages.batches.create(
+      { requests: [{ custom_id: "structured", params: requestParams }] },
+      requestOptions,
+    );
+    const POLL_MS = 15_000;
+    for (;;) {
+      await new Promise((resolve) => setTimeout(resolve, POLL_MS));
+      if (args.signal?.aborted) {
+        // Best-effort cancel so an abandoned request stops billing.
+        await args.client.messages.batches.cancel(batch.id).catch(() => {});
+        throw new Error("aborted while waiting for batch result");
+      }
+      const state = await args.client.messages.batches.retrieve(batch.id);
+      if (state.processing_status === "ended") break;
+    }
+    let message: Anthropic.Message | null = null;
+    for await (const entry of await args.client.messages.batches.results(batch.id)) {
+      if (entry.result.type === "succeeded") message = entry.result.message;
+      else throw new Error(`batch request ${entry.result.type}`);
+    }
+    if (!message) throw new Error("batch ended with no result");
+    let searchesUsed = 0;
+    let fetchesUsed = 0;
+    // The SDK's Message content union predates server tools — inspect raw.
+    for (const block of message.content as Array<{ type: string; name?: string }>) {
+      if (block.type === "server_tool_use" && block.name === "web_search") searchesUsed++;
+      else if (block.type === "server_tool_use" && block.name === "web_fetch") fetchesUsed++;
+    }
+    args.onProgress?.({ type: "done", searchesUsed, fetchesUsed });
+    for (const block of message.content) {
+      if (block.type === "tool_use" && block.name === args.toolName) {
+        return { output: block.input as T, searchesUsed, fetchesUsed };
+      }
+    }
+    throw new Error(
+      `model did not call tool ${args.toolName}; stop_reason=${message.stop_reason}`,
+    );
+  }
+
+  const stream = args.client.messages.stream(requestParams, {
+    signal: args.signal,
+    // web_fetch shipped behind this beta header; harmless once GA.
+    ...requestOptions,
+  });
 
   // Surface per-search/per-fetch progress: each server_tool_use block is one
   // web search or one page fetch; its input streams in via input_json_delta.

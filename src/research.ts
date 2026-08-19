@@ -16,6 +16,8 @@ import {
 export type ResearchDepth = "standard" | "deep";
 
 export interface ResearchOptions {
+  /** Half-price Message Batches routing — minutes of latency, same output. */
+  batchMode?: boolean;
   /** Defaults to process.env.ANTHROPIC_API_KEY. */
   anthropicApiKey?: string;
   /** Defaults to process.env.PROXYCURL_API_KEY. Optional — see README. */
@@ -198,6 +200,7 @@ export async function research(
     maxTokens: 8192,
     onProgress: opts.onProgress,
     signal: opts.signal,
+    batch: opts.batchMode,
   });
 
   // Models emit explicit nulls for unfillable optional fields — strip them
