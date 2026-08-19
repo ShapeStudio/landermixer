@@ -14,7 +14,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import { z } from "zod";
-import { callStructured, DEFAULT_MODEL, type OnProgress } from "./anthropic.js";
+import { callStructured, type OnProgress } from "./anthropic.js";
 
 /** People per lookup pass — bounds cost and keeps the prompt small. */
 export const LOOKUP_MAX_PEOPLE = 10;
@@ -100,7 +100,9 @@ export async function resolveLinkedinUrls(
   try {
     const { output, searchesUsed } = await callStructured<unknown>({
       client: opts.client,
-      model: opts.model,
+      // Profile-URL lookup is pure extraction — the small model does it
+      // at a third of the token price.
+      model: opts.model ?? "claude-haiku-4-5",
       systemPrompt: SYSTEM_PROMPT,
       userMessage,
       toolName: "record_profile_urls",

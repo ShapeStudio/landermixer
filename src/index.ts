@@ -7,6 +7,8 @@ export type { ResearchOptions, ResearchDepth } from "./research.js";
 export { searchProspects } from "./search.js";
 export type { SearchProspectsOptions } from "./search.js";
 export { resolveLinkedinUrls } from "./linkedin-lookup.js";
+export { sweepCompanyContacts, SWEEP_MODEL } from "./contact-sweep.js";
+export type { ContactSweepInput, ContactSweepOptions, ContactSweepResult } from "./contact-sweep.js";
 export type { LookupPerson } from "./linkedin-lookup.js";
 export { researchMany } from "./batch.js";
 export type { BatchOptions, BatchResult } from "./batch.js";
