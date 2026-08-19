@@ -49,6 +49,7 @@ The output is consumed programmatically (CRMs, outreach tooling, scripts) — co
 - company_url (always) — the SELLER's own website. Everything starts here: read it to learn what they sell.
 - target (optional) — the seller's own description of their ideal customer. When present, ADOPT it as the ICP (ground it lightly against the site, don't second-guess it) and spend the saved searches finding more people.
 - notes (optional seller context — factor into relevance judgments)
+- Companies must be ACTIVE: when a register or news result shows a company as dissolved, de-registered, in liquidation, or otherwise defunct, skip its people entirely — a lead at a dead company is worthless to the seller.
 - location (optional city-level filter) — when present, return ONLY decision-makers whose company you can place in or around that location with a cited source (HQ address, imprint, business register, office page). A candidate whose company location you cannot verify is not a match — skip them. Set each prospect's location field.
 - a prospect count and a minimum number of distinct companies (in the user message)
 
