@@ -49,6 +49,7 @@ The output is consumed programmatically (CRMs, outreach tooling, scripts) — co
 - company_url (always) — the SELLER's own website. Everything starts here: read it to learn what they sell.
 - target (optional) — the seller's own description of their ideal customer. When present, ADOPT it as the ICP (ground it lightly against the site, don't second-guess it) and spend the saved searches finding more people.
 - notes (optional seller context — factor into relevance judgments)
+- location (optional city-level filter) — when present, return ONLY decision-makers whose company you can place in or around that location with a cited source (HQ address, imprint, business register, office page). A candidate whose company location you cannot verify is not a match — skip them. Set each prospect's location field.
 - a prospect count and a minimum number of distinct companies (in the user message)
 
 # How to research
@@ -129,6 +130,9 @@ export async function searchProspects(
       ? `\n# Target customer (provided by the seller — adopt as the ICP)\n${parsedInput.target}`
       : null,
     parsedInput.notes ? `\n# Seller notes\n${parsedInput.notes}` : null,
+    parsedInput.location
+      ? `\n# Location filter (city-level)\nOnly decision-makers whose company is in or around: ${parsedInput.location}. Verify each one's location with a cited source; skip anyone you can't place there.`
+      : null,
     parsedInput.exclude?.length
       ? `\n# Already known — do NOT return these people (find others, ideally at other companies)\n${parsedInput.exclude.map((p) => `- ${p}`).join("\n")}`
       : null,

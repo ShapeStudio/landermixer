@@ -48,6 +48,8 @@ Search options:
   --no-profile-lookup    skip the pass that finds LinkedIn URLs for prospects
                          the search couldn't cite one for (saves a few searches)
   --notes <text>         extra context on what you sell
+  --location <city>      only decision-makers whose company can be placed
+                         in or around this city (verified, cited)
   --depth <d>            standard (14 searches, default) | deep (18 searches)
 
 Shared options:
@@ -103,6 +105,7 @@ type CliValues = {
   out?: string;
   concurrency?: string;
   target?: string;
+  location?: string;
   count?: string;
   research?: boolean;
   "no-profile-lookup"?: boolean;
@@ -127,6 +130,7 @@ async function main(): Promise<number> {
       out: { type: "string" },
       concurrency: { type: "string" },
       target: { type: "string" },
+      location: { type: "string" },
       count: { type: "string" },
       research: { type: "boolean" },
       "no-profile-lookup": { type: "boolean" },
@@ -290,6 +294,7 @@ async function runSearch(
         company_url: companyUrl,
         target: values.target,
         notes: values.notes,
+        location: values.location,
         count,
       },
       {

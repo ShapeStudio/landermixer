@@ -462,6 +462,11 @@ export const searchInputSchema = z.object({
   target: z.string().max(600).optional(),
   /** Extra context on what you sell — feeds the search. */
   notes: z.string().max(600).optional(),
+  /**
+   * City-level geographic filter — only decision-makers whose company can be
+   * placed in or around this location with a cited source.
+   */
+  location: z.string().max(120).optional(),
   /** Prospects to find. Default 10, applied in code. */
   count: z.number().int().min(1).max(25).optional(),
   /**
